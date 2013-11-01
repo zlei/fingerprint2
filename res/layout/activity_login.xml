@@ -60,7 +60,31 @@
                 android:maxLines="1"
                 android:singleLine="true" />
 
-            <Button
+            <EditText
+                android:id="@+id/customer_id"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="@string/prompt_customer_id"
+                android:maxLines="1"
+                android:singleLine="true" />
+
+            <EditText
+                android:id="@+id/developer_id"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="@string/prompt_developer_id"
+                android:maxLines="1"
+                android:singleLine="true" />
+            
+           <EditText
+                android:id="@+id/server_name"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="@string/default_url"
+                android:maxLines="1"
+                android:singleLine="true" />
+           
+           <Button
                 android:id="@+id/sign_in_button"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -70,13 +94,7 @@
                 android:paddingRight="32dp"
                 android:text="@string/action_sign_in" />
 
-            <EditText
-                android:id="@+id/server_name"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:hint="@string/prompt_server_url"
-                android:maxLines="1"
-                android:singleLine="true" />
+ 
         </LinearLayout>
     </ScrollView>
 

@@ -1,9 +1,9 @@
 package com.lighthouse.fingerprint2.activities;
 
-import it.sephiroth.android.library.imagezoom.ImageViewTouch;
 import it.sephiroth.android.library.imagezoom.ImageViewTouchBase.DisplayType;
 import android.os.Bundle;
 import android.view.Menu;
+import android.widget.ImageView;
 
 import com.lighthouse.fingerprint2.R;
 
@@ -13,8 +13,8 @@ public class MapViewActivity extends BasicActivity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_map_view);
-		ImageViewTouch imageView = (ImageViewTouch) findViewById(R.id.map_image);
-		imageView.setDisplayType(DisplayType.FIT_IF_BIGGER);
+		ImageView imageView = (ImageView) findViewById(R.id.map_image);
+//		imageView.setDisplayType(DisplayType.FIT_IF_BIGGER);
 		imageView.setImageResource(R.drawable.ic_launcher);
 	}
 

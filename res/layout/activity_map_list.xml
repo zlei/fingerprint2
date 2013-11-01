@@ -8,14 +8,70 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context=".MapListActivity" >
 
-    <ListView
-        android:id="@+id/listView_menu"
-        android:layout_width="match_parent"
+    <Spinner
+        android:id="@+id/spinner_state"
+        android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:layout_alignParentLeft="true"
         android:layout_alignParentTop="true"
-        android:layout_marginTop="28dp" >
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="46dp" />
 
-    </ListView>
+    <Spinner
+        android:id="@+id/spinner_building"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/spinner_state"
+        android:layout_below="@+id/spinner_state"
+        android:layout_marginTop="41dp"
+        android:visibility="invisible" />
+
+    <Spinner
+        android:id="@+id/spinner_floor"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/spinner_state"
+        android:layout_below="@+id/spinner_building"
+        android:layout_marginTop="51dp"
+        android:visibility="invisible" />
+
+    <TextView
+        android:id="@+id/select_state"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/spinner_state"
+        android:layout_alignParentTop="true"
+        android:layout_marginTop="30dp"
+        android:text="@string/select_state" />
+
+    <TextView
+        android:id="@+id/select_building"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/spinner_state"
+        android:layout_below="@+id/spinner_state"
+        android:layout_marginTop="16dp"
+        android:text="@string/select_building"
+        android:visibility="invisible" />
+
+    <TextView
+        android:id="@+id/select_floor"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/spinner_state"
+        android:layout_below="@+id/spinner_building"
+        android:layout_marginTop="22dp"
+        android:text="@string/select_floor"
+        android:visibility="invisible" />
+
+    <Button
+        android:id="@+id/button_select_ok"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_alignRight="@+id/spinner_state"
+        android:layout_marginBottom="32dp"
+        android:layout_marginRight="18dp"
+        android:clickable="false"
+        android:text="@string/ok" />
 
 </RelativeLayout>

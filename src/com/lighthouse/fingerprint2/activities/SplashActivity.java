@@ -11,14 +11,14 @@ import com.lighthouse.fingerprint2.R;
 
 public class SplashActivity extends BasicActivity {
 
-	private static int SPLASH_TIME_OUT = 3000;
+	private static int SPLASH_TIME_OUT = 2000;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_splash);
-		
-		//if firstrun, popup terms and conditions
+
+		// if firstrun, popup terms and conditions
 		boolean firstrun = getSharedPreferences("PREFERENCE", MODE_PRIVATE)
 				.getBoolean("firstrun", true);
 
@@ -50,24 +50,30 @@ public class SplashActivity extends BasicActivity {
 
 			getSharedPreferences("PREFERENCE", MODE_PRIVATE).edit()
 					.putBoolean("firstrun", false).commit();
-		}
-		else
-		fadeSplash();
+		} else
+			fadeSplash();
 	}
 
-	//fade splash screen to main activity
+	// fade splash screen to main activity
 	public void fadeSplash() {
 		new Handler().postDelayed(new Runnable() {
 			@Override
 			public void run() {
-				Intent i = new Intent(SplashActivity.this, LoginActivity.class);
-				startActivity(i);
+				Intent iLogin = new Intent(SplashActivity.this,
+						LoginActivity.class);
+				Intent iMain = new Intent(SplashActivity.this,
+						MainMenuActivity.class);
+				if (hasToken()) {
+					startActivityForResult(iLogin, INTENT_LOGIN_CODE);
+				} else {
+					startActivity(iMain);
+				}
 				finish();
 			}
 		}, SPLASH_TIME_OUT);
 	}
 
-	//Declined terms and conditions, exit app
+	// Declined terms and conditions, exit app
 	public void exitSplash() {
 		new Handler().postDelayed(new Runnable() {
 			@Override

@@ -8,10 +8,55 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context=".MapViewActivity" >
 
-    <it.sephiroth.android.library.imagezoom.ImageViewTouch
+    <TextView
+        android:id="@+id/map_info"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentRight="true"
+        android:layout_marginRight="29dp"
+        android:text="@string/map_info" />
+
+    <ImageView
         android:id="@+id/map_image"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:scaleType="fitCenter" />
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentTop="true"
+        android:src="@drawable/ic_launcher" />
+
+    <Button
+        android:id="@+id/button_scan_start"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_toLeftOf="@+id/button_scan_stop"
+        android:text="@string/scan_start" />
+
+    <Button
+        android:id="@+id/button_scan_stop"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBaseline="@+id/button_scan_start"
+        android:layout_alignBottom="@+id/button_scan_start"
+        android:layout_toLeftOf="@+id/button_scan_save"
+        android:text="@string/scan_stop" />
+
+    <Button
+        android:id="@+id/button_scan_save"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBaseline="@+id/button_scan_stop"
+        android:layout_alignBottom="@+id/button_scan_stop"
+        android:layout_toLeftOf="@+id/button_scan_clear"
+        android:text="@string/scan_save" />
+
+    <Button
+        android:id="@+id/button_scan_clear"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBaseline="@+id/button_scan_save"
+        android:layout_alignBottom="@+id/button_scan_save"
+        android:layout_alignParentRight="true"
+        android:text="@string/scan_clear" />
 
 </RelativeLayout>

@@ -35,8 +35,8 @@ public class MapListActivity extends BasicActivity implements
 		OnItemSelectedListener, INetworkTaskStatusListener {
 
 	private Spinner spnState, spnBuilding, spnFloor;
+	private Button button_select_map;
 	private TextView textBuilding, textFloor;
-
 	private ArrayList mData;
 
 	/**
@@ -53,16 +53,18 @@ public class MapListActivity extends BasicActivity implements
 	public static final int GET_FLOORS = 2;
 
 	private String[] state_list;
-	private List<String> building_list = new ArrayList<String>();
-	private List<String> floor_list = new ArrayList<String>();
+	private List<String> building_list;
+	private List<String> floor_list;
+	private HashMap<String, String> building_table;
+	private HashMap<String, String> floor_table;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_map_list);
-		mBundle = getIntent().getExtras();
+		// mBundle = getIntent().getExtras();
 		addItemsOnSpnState();
-		Button button_select_map = (Button) findViewById(R.id.button_select_ok);
+		button_select_map = (Button) findViewById(R.id.button_select_ok);
 		button_select_map.setOnClickListener(new View.OnClickListener() {
 			public void onClick(View v) {
 				Intent intent = new Intent(MapListActivity.this,
@@ -77,19 +79,20 @@ public class MapListActivity extends BasicActivity implements
 			long arg3) {
 		int id = parent.getId();
 		switch (id) {
-		case R.id.spinner_state: {
-			if (position != 0) {
-				loadBuildings(position);
-				addItemOnSpnBuilding();
-			}
+		case R.id.spinner_state:
+			button_select_map.setEnabled(false);
+			loadBuildings(position);
 			break;
-		}
-		case R.id.spinner_building: {
-			// String building = mData.get(position).toString();
-			loadFloors("2");
-			addItemOnSpnFloor();
+		case R.id.spinner_building:
+			String building_id = building_table.get(Integer.toString(position));
+			saveBuildingID(building_id);
+			loadFloors(getBuildingID());
 			break;
-		}
+		case R.id.spinner_floor:
+			String floor_id = floor_table.get(Integer.toString(position));
+			saveFloorID(floor_id);
+			button_select_map.setEnabled(true);
+			break;
 		}
 	}
 
@@ -109,8 +112,8 @@ public class MapListActivity extends BasicActivity implements
 		dataAdapter
 				.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 		spnState.setAdapter(dataAdapter);
-
 		spnState.setOnItemSelectedListener(this);
+
 		long position = spnState.getSelectedItemId();
 		Log.v(BasicActivity.LOG_TAG, Long.toString(position));
 		int which = safeLongToInt(position);
@@ -128,15 +131,14 @@ public class MapListActivity extends BasicActivity implements
 		textBuilding.setVisibility(View.VISIBLE);
 
 		// Get Building Database and Add to List
-		// ArrayAdapter<String> dataAdapter = new ArrayAdapter<String>(this,
-		// android.R.layout.simple_spinner_item, building_list);
 		ArrayAdapter<String> dataAdapter = new ArrayAdapter<String>(this,
-				android.R.layout.simple_spinner_item, mData);
+				android.R.layout.simple_spinner_item, building_list);
+		// ArrayAdapter<String> dataAdapter = new ArrayAdapter<String>(this,
+		// android.R.layout.simple_spinner_item, mData);
 		dataAdapter
 				.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 		spnBuilding.setAdapter(dataAdapter);
 		spnBuilding.setOnItemSelectedListener(this);
-
 	}
 
 	public void addItemOnSpnFloor() {
@@ -145,17 +147,18 @@ public class MapListActivity extends BasicActivity implements
 		spnFloor.setVisibility(View.VISIBLE);
 		textFloor.setVisibility(View.VISIBLE);
 		// Get Floor Database and Add to List
-		floor_list.add("floor 1");
 		ArrayAdapter<String> dataAdapter = new ArrayAdapter<String>(this,
 				android.R.layout.simple_spinner_item, floor_list);
 		dataAdapter
 				.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 		spnFloor.setAdapter(dataAdapter);
+		spnFloor.setOnItemSelectedListener(this);
 	}
 
 	void loadBuildings(int position) {
 		// to find it is gps or changed
-		mData = new ArrayList<String>();
+		building_list = new ArrayList<String>();
+		building_table = new HashMap<String, String>();
 		if (position != 0) {
 			position *= 3;
 			getLocationManager().writeActiveOption(position);
@@ -180,10 +183,13 @@ public class MapListActivity extends BasicActivity implements
 				"/logs/pars/getbuildings/", false, hash, true);
 		task.setTag(TAG_KEY, new Integer(GET_BUILDINGS));
 		NetworkManager.getInstance().addTask(task);
+
 	}
 
 	void loadFloors(String buildingId) {
 		mData = new ArrayList<MapData>();
+		floor_list = new ArrayList<String>();
+		floor_table = new HashMap<String, String>();
 		Hashtable<String, String> hash = new Hashtable<String, String>(3);
 		hash.put("buildingId", buildingId);
 		hash.put("token", getToken());
@@ -196,7 +202,7 @@ public class MapListActivity extends BasicActivity implements
 
 	@Override
 	public void nTaskSucces(NetworkResult result) {
-
+		int counter = 0;
 		try {
 			XmlPullParser parser = XmlPullParserFactory.newInstance()
 					.newPullParser();
@@ -226,8 +232,13 @@ public class MapListActivity extends BasicActivity implements
 								buildingData.building_id = Integer
 										.parseInt(parser.getAttributeValue(
 												null, "building_id"));
-								// building_list.add(buildingData.name);
-								mData.add(buildingData);
+								building_list.add(buildingData.name);
+								building_table
+										.put(Integer.toString(counter),
+												Integer.toString(buildingData.building_id));
+								counter++;
+								// mData.add(buildingData);
+								addItemOnSpnBuilding();
 							}
 				break;
 			case GET_FLOORS:
@@ -257,9 +268,11 @@ public class MapListActivity extends BasicActivity implements
 										.getAttributeValue(null, "height"));
 								mapData.img = parser.getAttributeValue(null,
 										"img");
-
 								floor_list.add(Integer
 										.toString(mapData.floorId));
+								floor_table.put(Integer.toString(counter),
+										Integer.toString(mapData.floorId));
+								counter++;
 							} else if (parser.getEventType() == XmlPullParser.START_TAG
 									&& parser.getName().equalsIgnoreCase(
 											"scale")) {
@@ -272,6 +285,7 @@ public class MapListActivity extends BasicActivity implements
 								mapData.addZoom(scale, x, y);
 							}
 						}
+						addItemOnSpnFloor();
 					}
 				break;
 			}

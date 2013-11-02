@@ -44,6 +44,10 @@ public class BasicActivity extends Activity {
 
 	public static String PREF_DEVELOPER_ID = "developer_id";
 
+	public static String PREF_BUILDING_ID = "";
+
+	public static String PREF_FLOOR_ID = "";
+
 	public static final int INTENT_LOGIN_CODE = 100;
 
 	protected String mFilename;
@@ -96,8 +100,6 @@ public class BasicActivity extends Activity {
 
 	/**
 	 * Gets token
-	 * 
-	 * @return
 	 */
 	public String getToken() {
 		return mPreferences.getString(PREF_LOGIN_TOKEN, "");
@@ -116,6 +118,32 @@ public class BasicActivity extends Activity {
 		if (mPreferences.contains(PREF_LOGIN_TOKEN)) {
 			mPreferences.edit().remove(PREF_LOGIN_TOKEN).commit();
 		}
+	}
+
+	// save current building id
+	public void saveBuildingID(String building_id) {
+		mPreferences.edit().putString(PREF_BUILDING_ID, building_id).commit();
+	}
+
+	/**
+	 * get current building id
+	 */
+	public String getBuildingID() {
+		return mPreferences.getString(PREF_BUILDING_ID, "");
+	}
+
+	/**
+	 * save current floor id
+	 */
+	public void saveFloorID(String floor_id) {
+		mPreferences.edit().putString(PREF_FLOOR_ID, floor_id).commit();
+	}
+
+	/**
+	 * get current floor id
+	 */
+	public String getFloorID() {
+		return mPreferences.getString(PREF_FLOOR_ID, "");
 	}
 
 	/**

@@ -11,7 +11,7 @@ import com.lighthouse.fingerprint2.R;
 
 public class SplashActivity extends BasicActivity {
 
-	private static int SPLASH_TIME_OUT = 2000;
+	private static int SPLASH_TIME_OUT = 0;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -22,7 +22,7 @@ public class SplashActivity extends BasicActivity {
 		boolean firstrun = getSharedPreferences("PREFERENCE", MODE_PRIVATE)
 				.getBoolean("firstrun", true);
 
-		if (!firstrun) {
+		if (firstrun) {
 			new AlertDialog.Builder(this)
 					.setIcon(R.drawable.ic_launcher)
 					.setTitle(R.string.terms)
@@ -63,7 +63,7 @@ public class SplashActivity extends BasicActivity {
 						LoginActivity.class);
 				Intent iMain = new Intent(SplashActivity.this,
 						MainMenuActivity.class);
-				if (hasToken()) {
+				if (!hasToken()) {
 					startActivityForResult(iLogin, INTENT_LOGIN_CODE);
 				} else {
 					startActivity(iMain);

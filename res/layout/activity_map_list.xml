@@ -71,7 +71,7 @@
         android:layout_alignRight="@+id/spinner_state"
         android:layout_marginBottom="32dp"
         android:layout_marginRight="18dp"
-        android:clickable="false"
+        android:enabled="false"
         android:text="@string/ok" />
 
 </RelativeLayout>

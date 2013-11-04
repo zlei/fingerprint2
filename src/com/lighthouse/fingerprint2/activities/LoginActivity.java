@@ -67,7 +67,7 @@ public class LoginActivity extends BasicActivity implements
 		super.onCreate(savedInstanceState);
 
 		setContentView(R.layout.activity_login);
-		
+
 		DataPersistence d = new DataPersistence(this);
 		NetworkTask.DEFAULT_BASE_URL = d.getServerName();
 
@@ -99,6 +99,7 @@ public class LoginActivity extends BasicActivity implements
 		mServerView = (EditText) findViewById(R.id.server_name);
 		mServerView.setText(mServer);
 
+		mLoginFormView = findViewById(R.id.login_form);
 		mLoginStatusView = findViewById(R.id.login_status);
 		mLoginStatusMessageView = (TextView) findViewById(R.id.login_status_message);
 
@@ -136,11 +137,15 @@ public class LoginActivity extends BasicActivity implements
 		mServerView.setError(null);
 
 		// Store values at the time of the login attempt.
-		mUsername = mUsernameView.getText().toString();
-		mPassword = mPasswordView.getText().toString();
-		mCustomerID = mCustomerIDView.getText().toString();
-		mDeveloperID = mDeveloperIDView.getText().toString();
-//		mServer = mServerView.getText().toString();
+		// mUsername = mUsernameView.getText().toString();
+		// mPassword = mPasswordView.getText().toString();
+		// mCustomerID = mCustomerIDView.getText().toString();
+		// mDeveloperID = mDeveloperIDView.getText().toString();
+		// mServer = mServerView.getText().toString();
+		mUsername = "test";
+		mPassword = "test3030";
+		mCustomerID = "aa";
+		mDeveloperID = "aa";
 		mServer = getString(R.string.default_url);
 
 		boolean cancel = false;
@@ -191,7 +196,6 @@ public class LoginActivity extends BasicActivity implements
 			// Show a progress spinner, and kick off a background task to
 			// perform the user login attempt.
 			mLoginStatusMessageView.setText(R.string.login_progress_signing_in);
-			// showProgress(true);
 			if (isOnline()) {
 				Hashtable<String, String> hash = new Hashtable<String, String>(
 						3);
@@ -208,7 +212,7 @@ public class LoginActivity extends BasicActivity implements
 			}
 			try {
 				// Simulate network access.
-				Thread.sleep(2000);
+				Thread.sleep(0);
 			} catch (InterruptedException e) {
 				return;
 			}
@@ -276,7 +280,7 @@ public class LoginActivity extends BasicActivity implements
 
 	@Override
 	public void nTaskSucces(NetworkResult result) {
-
+		showProgress(true);
 		switch ((Integer) (result.getTask().getTag(TAG_KEY))) {
 		case NETWORK_LOGIN:
 			try {

@@ -30,7 +30,6 @@
     <string name="msg_dialog_loading">Loading</string>
     <string name="msg_alert">Alert</string>
     <string name="msg_error">Error</string>
-    <string name="submit_log_url">/logs/pars/</string>
 
     <!-- Strings related to login -->
     <string name="title_activity_login">Sign in</string>
@@ -48,5 +47,9 @@
     <string name="error_invalid_password">This password is too short</string>
     <string name="error_incorrect_password">This password is incorrect</string>
     <string name="error_field_required">This field is required</string>
+
+    <!-- url -->
+    <string name="submit_log_url">/logs/pars/</string>
+    <string name="plans_url">/plans/</string>
 
 </resources>

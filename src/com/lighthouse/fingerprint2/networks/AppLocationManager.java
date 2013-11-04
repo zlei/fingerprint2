@@ -97,7 +97,7 @@ public class AppLocationManager implements LocationListener {
 		String[] names = new String[mStates.length / 3];
 		for (int i = 0; i < mStates.length; i += 3) {
 			names[i / 3] = (activeState == i) ? new StringBuilder()
-					.append("✓ ").append(mStates[i]).toString() : mStates[i];
+					.append("@").append(mStates[i]).toString() : mStates[i];
 		}
 
 		return names;

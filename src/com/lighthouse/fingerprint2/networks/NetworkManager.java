@@ -155,6 +155,13 @@ public class NetworkManager {
 								"Received authentication challenge is null")) {
 					result.setResponceCode(401);
 				}
+
+				else if (e2 != null
+						&& e2.getMessage().contains("failed to connect")) {
+					result.setResponceCode(1006);
+				}
+
+				result.setException(e2);
 			}
 			result.setException(e);
 		} finally {

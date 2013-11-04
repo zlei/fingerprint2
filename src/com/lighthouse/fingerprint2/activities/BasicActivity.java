@@ -28,6 +28,9 @@ import com.lighthouse.fingerprint2.logs.ErrorLog;
 import com.lighthouse.fingerprint2.logs.LogWriter;
 import com.lighthouse.fingerprint2.logs.LogWriterSensors;
 import com.lighthouse.fingerprint2.networks.AppLocationManager;
+import com.lighthouse.fingerprint2.utilities.DataPersistence;
+import com.nostra13.universalimageloader.core.ImageLoader;
+import com.nostra13.universalimageloader.core.ImageLoaderConfiguration;
 
 public class BasicActivity extends Activity {
 	protected SharedPreferences mPreferences;
@@ -48,6 +51,8 @@ public class BasicActivity extends Activity {
 
 	public static String PREF_FLOOR_ID = "";
 
+	public static String PREF_IMG_URL = "";
+
 	public static final int INTENT_LOGIN_CODE = 100;
 
 	protected String mFilename;
@@ -61,6 +66,12 @@ public class BasicActivity extends Activity {
 
 		mPreferences = PreferenceManager
 				.getDefaultSharedPreferences(getBaseContext());
+
+		// Create global configuration and initialize ImageLoader with this
+		// configuration
+		ImageLoaderConfiguration config = new ImageLoaderConfiguration.Builder(
+				getApplicationContext()).build();
+		ImageLoader.getInstance().init(config);
 	}
 
 	/**
@@ -144,6 +155,24 @@ public class BasicActivity extends Activity {
 	 */
 	public String getFloorID() {
 		return mPreferences.getString(PREF_FLOOR_ID, "");
+	}
+
+	/**
+	 * save current img url
+	 */
+	public void saveImgUrl(String imageName) {
+		DataPersistence d = new DataPersistence(this);
+		String imageUrl = new StringBuilder()
+				.append(d.getServerName() + getString(R.string.plans_url))
+				.append(imageName).toString();
+		mPreferences.edit().putString(PREF_IMG_URL, imageUrl).commit();
+	}
+
+	/**
+	 * get current img url
+	 */
+	public String getImgUrl() {
+		return mPreferences.getString(PREF_IMG_URL, "");
 	}
 
 	/**

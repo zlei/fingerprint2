@@ -8,7 +8,6 @@ import java.util.Arrays;
 import org.apache.commons.lang3.ArrayUtils;
 
 import android.app.AlertDialog;
-import android.app.SearchManager.OnCancelListener;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnClickListener;
@@ -29,6 +28,8 @@ import com.lighthouse.fingerprint2.logs.LogWriter;
 import com.lighthouse.fingerprint2.logs.LogWriterSensors;
 import com.lighthouse.fingerprint2.networks.HttpLogSender;
 import com.lighthouse.fingerprint2.utilities.DataPersistence;
+import com.nostra13.universalimageloader.core.ImageLoader;
+import com.nostra13.universalimageloader.core.ImageLoaderConfiguration;
 
 public class MainMenuActivity extends BasicActivity {
 
@@ -89,6 +90,8 @@ public class MainMenuActivity extends BasicActivity {
 				// Perform action on click
 			}
 		});
+
+
 	}
 
 	/**

@@ -23,6 +23,7 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.lighthouse.fingerprint2.R;
 import com.lighthouse.fingerprint2.networks.INetworkTaskStatusListener;
@@ -38,7 +39,7 @@ public class MapListActivity extends BasicActivity implements
 	private Button button_select_map;
 	private TextView textBuilding, textFloor;
 	private ArrayList mData;
-
+	boolean firstrun;
 	/**
 	 * Current bundle
 	 */
@@ -63,6 +64,11 @@ public class MapListActivity extends BasicActivity implements
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_map_list);
 		// mBundle = getIntent().getExtras();
+		spnBuilding = (Spinner) findViewById(R.id.spinner_building);
+		textBuilding = (TextView) findViewById(R.id.select_building);
+		spnFloor = (Spinner) findViewById(R.id.spinner_floor);
+		textFloor = (TextView) findViewById(R.id.select_floor);
+		firstrun = true;
 		addItemsOnSpnState();
 		button_select_map = (Button) findViewById(R.id.button_select_ok);
 		button_select_map.setOnClickListener(new View.OnClickListener() {
@@ -80,8 +86,15 @@ public class MapListActivity extends BasicActivity implements
 		int id = parent.getId();
 		switch (id) {
 		case R.id.spinner_state:
-			button_select_map.setEnabled(false);
-			loadBuildings(position);
+			spnBuilding.setVisibility(View.INVISIBLE);
+			textBuilding.setVisibility(View.INVISIBLE);
+			spnFloor.setVisibility(View.INVISIBLE);
+			textFloor.setVisibility(View.INVISIBLE);
+			if (!firstrun) {
+				button_select_map.setEnabled(false);
+				loadBuildings(position);
+			}
+			firstrun = false;
 			break;
 		case R.id.spinner_building:
 			String building_id = building_table.get(Integer.toString(position));
@@ -89,8 +102,8 @@ public class MapListActivity extends BasicActivity implements
 			loadFloors(getBuildingID());
 			break;
 		case R.id.spinner_floor:
-			String floor_id = floor_table.get(Integer.toString(position));
-			saveFloorID(floor_id);
+//			String floor_id = floor_table.get(Integer.toString(position));
+//			saveFloorID(floor_id);
 			button_select_map.setEnabled(true);
 			break;
 		}
@@ -125,8 +138,6 @@ public class MapListActivity extends BasicActivity implements
 	}
 
 	public void addItemOnSpnBuilding() {
-		spnBuilding = (Spinner) findViewById(R.id.spinner_building);
-		textBuilding = (TextView) findViewById(R.id.select_building);
 		spnBuilding.setVisibility(View.VISIBLE);
 		textBuilding.setVisibility(View.VISIBLE);
 
@@ -142,8 +153,6 @@ public class MapListActivity extends BasicActivity implements
 	}
 
 	public void addItemOnSpnFloor() {
-		spnFloor = (Spinner) findViewById(R.id.spinner_floor);
-		textFloor = (TextView) findViewById(R.id.select_floor);
 		spnFloor.setVisibility(View.VISIBLE);
 		textFloor.setVisibility(View.VISIBLE);
 		// Get Floor Database and Add to List
@@ -159,10 +168,8 @@ public class MapListActivity extends BasicActivity implements
 		// to find it is gps or changed
 		building_list = new ArrayList<String>();
 		building_table = new HashMap<String, String>();
-		if (position != 0) {
-			position *= 3;
-			getLocationManager().writeActiveOption(position);
-		}
+		position *= 3;
+		getLocationManager().writeActiveOption(position);
 
 		Hashtable<String, String> hash = new Hashtable<String, String>(3);
 		hash.put("lat",
@@ -238,8 +245,13 @@ public class MapListActivity extends BasicActivity implements
 												Integer.toString(buildingData.building_id));
 								counter++;
 								// mData.add(buildingData);
-								addItemOnSpnBuilding();
 							}
+				if (building_list.isEmpty() || building_list == null)
+					Toast.makeText(this,
+							"Sorry, we do not have map in this state yet!",
+							Toast.LENGTH_SHORT).show();
+				else
+					addItemOnSpnBuilding();
 				break;
 			case GET_FLOORS:
 				parser.nextTag();
@@ -273,17 +285,20 @@ public class MapListActivity extends BasicActivity implements
 								floor_table.put(Integer.toString(counter),
 										Integer.toString(mapData.floorId));
 								counter++;
-							} else if (parser.getEventType() == XmlPullParser.START_TAG
-									&& parser.getName().equalsIgnoreCase(
-											"scale")) {
-								int x = Integer.parseInt(parser
-										.getAttributeValue(null, "x"));
-								int y = Integer.parseInt(parser
-										.getAttributeValue(null, "y"));
-								parser.next();
-								int scale = Integer.parseInt(parser.getText());
-								mapData.addZoom(scale, x, y);
+								saveImgUrl(mapData.img);
+
 							}
+							/*
+							 * else if (parser.getEventType() ==
+							 * XmlPullParser.START_TAG &&
+							 * parser.getName().equalsIgnoreCase( "scale")) {
+							 * int x = Integer.parseInt(parser
+							 * .getAttributeValue(null, "x")); int y =
+							 * Integer.parseInt(parser .getAttributeValue(null,
+							 * "y")); parser.next(); int scale =
+							 * Integer.parseInt(parser.getText());
+							 * mapData.addZoom(scale, x, y); }
+							 */
 						}
 						addItemOnSpnFloor();
 					}

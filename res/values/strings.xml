@@ -7,6 +7,7 @@
     <string name="title_activity_settings">Setting</string>
     <string name="title_activity_main_menu">MainMenuActivity</string>
     <string name="title_activity_map_view">MapViewActivity</string>
+    <string name="log_out">Log out</string>
     <string name="terms">Terms and Conditions</string>
     <string name="shared_preferences_name">shared_prefer</string>
     <string name="default_url">http://54.221.214.250</string>
@@ -47,6 +48,9 @@
     <string name="error_invalid_password">This password is too short</string>
     <string name="error_incorrect_password">This password is incorrect</string>
     <string name="error_field_required">This field is required</string>
+    <string name="login_facebook">Login with Facebook</string>
+    <string name="login_fingerprint2">Login with Fingerprint2</string>
+    
 
     <!-- url -->
     <string name="submit_log_url">/logs/pars/</string>

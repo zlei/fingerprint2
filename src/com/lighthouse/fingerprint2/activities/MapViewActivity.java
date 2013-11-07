@@ -1,5 +1,8 @@
 package com.lighthouse.fingerprint2.activities;
 
+import it.sephiroth.android.library.imagezoom.ImageViewTouch;
+import it.sephiroth.android.library.imagezoom.ImageViewTouchBase.DisplayType;
+
 import java.io.ByteArrayInputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -43,32 +46,22 @@ public class MapViewActivity extends BasicActivity implements
 
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_map_view);
-
-		options = new DisplayImageOptions.Builder()
-				// .showImageForEmptyUri(R.drawable.ic_empty)
-				// .showImageOnFail(R.drawable.ic_error)
-				.showImageForEmptyUri(R.drawable.ic_launcher)
-				.showImageOnFail(R.drawable.ic_launcher)
-				.resetViewBeforeLoading(true)
-				.cacheInMemory(true)
-				// cache to memory
-				.cacheOnDisc(true)
-				// cache to SD card
-				.imageScaleType(ImageScaleType.EXACTLY)
-				.bitmapConfig(Bitmap.Config.RGB_565)
-				.displayer(new FadeInBitmapDisplayer(300)).build();
+		setImageLoaderOption();
 
 		// mBundle = getIntent().getExtras();
 		// mMapData = (MapData) mBundle.get("data");
 		imageUrl = getImgUrl();
 		downloadMap();
+		
 		// setMapImage();
 	}
 
 	public void downloadMap() {
 		// use ImageViewTouch lib to deal with image zooming and panning
 		imageLoader = ImageLoader.getInstance();
-		ImageView imageView = (ImageView) findViewById(R.id.map_image);
+		ImageViewTouch imageView = (ImageViewTouch) findViewById(R.id.map_image);
+		// ImageView imageView = (ImageView) findViewById(R.id.map_image);
+		imageView.setDisplayType(DisplayType.FIT_IF_BIGGER);
 		imageLoader.displayImage(imageUrl, imageView, options,
 				new SimpleImageLoadingListener() {
 					@Override
@@ -181,6 +174,22 @@ public class MapViewActivity extends BasicActivity implements
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+	}
+
+	private void setImageLoaderOption() {
+		options = new DisplayImageOptions.Builder()
+				// .showImageForEmptyUri(R.drawable.ic_empty)
+				// .showImageOnFail(R.drawable.ic_error)
+				.showImageForEmptyUri(R.drawable.ic_launcher)
+				.showImageOnFail(R.drawable.ic_launcher)
+				.resetViewBeforeLoading(true)
+				.cacheInMemory(true)
+				// cache to memory
+				.cacheOnDisc(true)
+				// cache to SD card
+				.imageScaleType(ImageScaleType.EXACTLY)
+				.bitmapConfig(Bitmap.Config.RGB_565)
+				.displayer(new FadeInBitmapDisplayer(300)).build();
 	}
 
 	@Override

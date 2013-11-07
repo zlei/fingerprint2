@@ -27,26 +27,28 @@ public final class R {
         public static final int ic_launcher=0x7f020000;
     }
     public static final class id {
-        public static final int action_forgot_password=0x7f09001c;
-        public static final int action_settings=0x7f09001d;
+        public static final int action_forgot_password=0x7f09001f;
+        public static final int action_settings=0x7f090020;
         public static final int button_buildings=0x7f09000b;
         public static final int button_maplists=0x7f09000a;
         public static final int button_reviewlog=0x7f09000d;
-        public static final int button_scan_clear=0x7f09001a;
-        public static final int button_scan_save=0x7f090019;
-        public static final int button_scan_start=0x7f090017;
+        public static final int button_scan_clear=0x7f090016;
+        public static final int button_scan_save=0x7f090017;
+        public static final int button_scan_start=0x7f090019;
         public static final int button_scan_stop=0x7f090018;
         public static final int button_select_ok=0x7f090014;
         public static final int button_uploadlog=0x7f09000c;
         public static final int customer_id=0x7f090006;
         public static final int developer_id=0x7f090007;
-        public static final int list_textView=0x7f09001b;
+        public static final int list_textView=0x7f09001e;
         public static final int login=0x7f090005;
+        public static final int login_facebook=0x7f09001d;
+        public static final int login_fingerprint2=0x7f09001c;
         public static final int login_form=0x7f090002;
         public static final int login_status=0x7f090000;
         public static final int login_status_message=0x7f090001;
-        public static final int map_image=0x7f090016;
-        public static final int map_info=0x7f090015;
+        public static final int map_image=0x7f090015;
+        public static final int map_info=0x7f09001a;
         public static final int password=0x7f090004;
         public static final int select_building=0x7f090012;
         public static final int select_floor=0x7f090013;
@@ -56,6 +58,7 @@ public final class R {
         public static final int spinner_building=0x7f09000f;
         public static final int spinner_floor=0x7f090010;
         public static final int spinner_state=0x7f09000e;
+        public static final int text_logo=0x7f09001b;
         public static final int username=0x7f090003;
     }
     public static final class layout {
@@ -74,56 +77,59 @@ public final class R {
         public static final int maplist=0x7f080004;
     }
     public static final class string {
-        public static final int action_forgot_password=0x7f060026;
+        public static final int action_forgot_password=0x7f060027;
         public static final int action_settings=0x7f060001;
-        public static final int action_sign_in=0x7f060024;
-        public static final int action_sign_in_short=0x7f060025;
+        public static final int action_sign_in=0x7f060025;
+        public static final int action_sign_in_short=0x7f060026;
         public static final int app_name=0x7f060000;
-        public static final int buildings=0x7f06000a;
-        public static final int default_server_url=0x7f060023;
-        public static final int default_url=0x7f060008;
-        public static final int error_field_required=0x7f06002b;
-        public static final int error_incorrect_password=0x7f06002a;
-        public static final int error_invalid_password=0x7f060029;
-        public static final int error_invalid_username=0x7f060028;
-        public static final int login_progress_signing_in=0x7f060027;
-        public static final int map_info=0x7f060011;
-        public static final int map_lists=0x7f060009;
-        public static final int msg_alert=0x7f06001b;
-        public static final int msg_alert_1=0x7f060017;
-        public static final int msg_alert_2=0x7f060018;
-        public static final int msg_alert_3=0x7f060019;
-        public static final int msg_alert_connection=0x7f060016;
-        public static final int msg_dialog_loading=0x7f06001a;
-        public static final int msg_error=0x7f06001c;
-        public static final int ok=0x7f060015;
-        public static final int plans_url=0x7f06002d;
-        public static final int prompt_customer_id=0x7f060020;
-        public static final int prompt_developer_id=0x7f060021;
-        public static final int prompt_password=0x7f06001f;
-        public static final int prompt_server_url=0x7f060022;
-        public static final int prompt_username=0x7f06001e;
-        public static final int review_log=0x7f06000b;
-        public static final int scan_clear=0x7f060010;
-        public static final int scan_save=0x7f06000f;
-        public static final int scan_start=0x7f06000d;
-        public static final int scan_stop=0x7f06000e;
-        public static final int select_building=0x7f060013;
-        public static final int select_floor=0x7f060014;
-        public static final int select_state=0x7f060012;
-        public static final int shared_preferences_name=0x7f060007;
+        public static final int buildings=0x7f06000b;
+        public static final int default_server_url=0x7f060024;
+        public static final int default_url=0x7f060009;
+        public static final int error_field_required=0x7f06002c;
+        public static final int error_incorrect_password=0x7f06002b;
+        public static final int error_invalid_password=0x7f06002a;
+        public static final int error_invalid_username=0x7f060029;
+        public static final int log_out=0x7f060006;
+        public static final int login_facebook=0x7f06002d;
+        public static final int login_fingerprint2=0x7f06002e;
+        public static final int login_progress_signing_in=0x7f060028;
+        public static final int map_info=0x7f060012;
+        public static final int map_lists=0x7f06000a;
+        public static final int msg_alert=0x7f06001c;
+        public static final int msg_alert_1=0x7f060018;
+        public static final int msg_alert_2=0x7f060019;
+        public static final int msg_alert_3=0x7f06001a;
+        public static final int msg_alert_connection=0x7f060017;
+        public static final int msg_dialog_loading=0x7f06001b;
+        public static final int msg_error=0x7f06001d;
+        public static final int ok=0x7f060016;
+        public static final int plans_url=0x7f060030;
+        public static final int prompt_customer_id=0x7f060021;
+        public static final int prompt_developer_id=0x7f060022;
+        public static final int prompt_password=0x7f060020;
+        public static final int prompt_server_url=0x7f060023;
+        public static final int prompt_username=0x7f06001f;
+        public static final int review_log=0x7f06000c;
+        public static final int scan_clear=0x7f060011;
+        public static final int scan_save=0x7f060010;
+        public static final int scan_start=0x7f06000e;
+        public static final int scan_stop=0x7f06000f;
+        public static final int select_building=0x7f060014;
+        public static final int select_floor=0x7f060015;
+        public static final int select_state=0x7f060013;
+        public static final int shared_preferences_name=0x7f060008;
         /**  url 
          */
-        public static final int submit_log_url=0x7f06002c;
-        public static final int terms=0x7f060006;
+        public static final int submit_log_url=0x7f06002f;
+        public static final int terms=0x7f060007;
         /**  Strings related to login 
          */
-        public static final int title_activity_login=0x7f06001d;
+        public static final int title_activity_login=0x7f06001e;
         public static final int title_activity_main_menu=0x7f060004;
         public static final int title_activity_map_view=0x7f060005;
         public static final int title_activity_maplist=0x7f060002;
         public static final int title_activity_settings=0x7f060003;
-        public static final int upload_log=0x7f06000c;
+        public static final int upload_log=0x7f06000d;
     }
     public static final class style {
         /** 

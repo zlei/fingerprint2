@@ -5,6 +5,8 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
+import android.view.View;
+import android.widget.Button;
 import android.widget.Toast;
 
 import com.lighthouse.fingerprint2.R;
@@ -17,12 +19,11 @@ public class SplashActivity extends BasicActivity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_splash);
-
-		// if firstrun, popup terms and conditions
 		boolean firstrun = getSharedPreferences("PREFERENCE", MODE_PRIVATE)
 				.getBoolean("firstrun", true);
 
-		if (firstrun) {
+		// if firstrun, popup terms and conditions
+		if (!firstrun) {
 			new AlertDialog.Builder(this)
 					.setIcon(R.drawable.ic_launcher)
 					.setTitle(R.string.terms)
@@ -34,7 +35,7 @@ public class SplashActivity extends BasicActivity {
 									Toast.makeText(getApplicationContext(),
 											"Welcome to Fingerprint2!",
 											Toast.LENGTH_SHORT).show();
-									fadeSplash();
+									firstLogin();
 								}
 							})
 					.setNegativeButton("Decline",
@@ -52,6 +53,30 @@ public class SplashActivity extends BasicActivity {
 					.putBoolean("firstrun", false).commit();
 		} else
 			fadeSplash();
+
+	}
+
+	public void firstLogin() {
+		Button button_login_facebook = (Button) findViewById(R.id.login_facebook);
+		button_login_facebook.setOnClickListener(new View.OnClickListener() {
+			public void onClick(View v) {
+				Intent intent = new Intent(SplashActivity.this,
+						LoginActivity.class);
+				startActivity(intent);
+			}
+		});
+
+		Button button_login_fingerprint2 = (Button) findViewById(R.id.login_fingerprint2);
+		button_login_fingerprint2
+				.setOnClickListener(new View.OnClickListener() {
+					public void onClick(View v) {
+						Intent intent = new Intent(SplashActivity.this,
+								LoginActivity.class);
+						startActivity(intent);
+						// Perform action on click
+					}
+				});
+
 	}
 
 	// fade splash screen to main activity

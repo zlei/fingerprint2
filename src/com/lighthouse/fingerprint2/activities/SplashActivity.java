@@ -23,7 +23,7 @@ public class SplashActivity extends BasicActivity {
 				.getBoolean("firstrun", true);
 
 		// if firstrun, popup terms and conditions
-		if (!firstrun) {
+		if (firstrun) {
 			new AlertDialog.Builder(this)
 					.setIcon(R.drawable.ic_launcher)
 					.setTitle(R.string.terms)
@@ -63,6 +63,7 @@ public class SplashActivity extends BasicActivity {
 				Intent intent = new Intent(SplashActivity.this,
 						LoginActivity.class);
 				startActivity(intent);
+				finish();
 			}
 		});
 
@@ -73,6 +74,7 @@ public class SplashActivity extends BasicActivity {
 						Intent intent = new Intent(SplashActivity.this,
 								LoginActivity.class);
 						startActivity(intent);
+						finish();
 						// Perform action on click
 					}
 				});

@@ -27,8 +27,8 @@ public final class R {
         public static final int ic_launcher=0x7f020000;
     }
     public static final class id {
-        public static final int action_forgot_password=0x7f09001f;
-        public static final int action_settings=0x7f090020;
+        public static final int action_forgot_password=0x7f090021;
+        public static final int action_settings=0x7f090022;
         public static final int button_buildings=0x7f09000b;
         public static final int button_maplists=0x7f09000a;
         public static final int button_reviewlog=0x7f09000d;
@@ -40,6 +40,7 @@ public final class R {
         public static final int button_uploadlog=0x7f09000c;
         public static final int customer_id=0x7f090006;
         public static final int developer_id=0x7f090007;
+        public static final int lSearchCellLayout=0x7f09001f;
         public static final int list_textView=0x7f09001e;
         public static final int login=0x7f090005;
         public static final int login_facebook=0x7f09001d;
@@ -58,6 +59,7 @@ public final class R {
         public static final int spinner_building=0x7f09000f;
         public static final int spinner_floor=0x7f090010;
         public static final int spinner_state=0x7f09000e;
+        public static final int tSearchCellText=0x7f090020;
         public static final int text_logo=0x7f09001b;
         public static final int username=0x7f090003;
     }
@@ -68,6 +70,7 @@ public final class R {
         public static final int activity_map_view=0x7f030003;
         public static final int activity_splash=0x7f030004;
         public static final int list_text=0x7f030005;
+        public static final int search_cell=0x7f030006;
     }
     public static final class menu {
         public static final int login=0x7f080000;
@@ -100,8 +103,34 @@ public final class R {
         public static final int msg_alert_2=0x7f060019;
         public static final int msg_alert_3=0x7f06001a;
         public static final int msg_alert_connection=0x7f060017;
+        public static final int msg_alert_wifi_title=0x7f060038;
+        public static final int msg_basefolder_exists=0x7f060042;
+        public static final int msg_connections_turnoff=0x7f060048;
+        public static final int msg_connections_turnon=0x7f060047;
+        public static final int msg_customer_id_empty=0x7f060039;
+        public static final int msg_developer_id_empty=0x7f06003a;
         public static final int msg_dialog_loading=0x7f06001b;
+        public static final int msg_dialog_wifi_scanning=0x7f06003f;
         public static final int msg_error=0x7f06001d;
+        public static final int msg_internet_mobile_detected=0x7f060045;
+        public static final int msg_internet_mobile_turnon=0x7f060046;
+        public static final int msg_log_nocount=0x7f06003d;
+        public static final int msg_login_customer_id=0x7f060035;
+        public static final int msg_login_developer_id=0x7f060036;
+        public static final int msg_login_incorrect=0x7f060037;
+        public static final int msg_login_pass=0x7f060034;
+        public static final int msg_login_user=0x7f060033;
+        /**  messages 
+         */
+        public static final int msg_map_2points_required=0x7f060031;
+        public static final int msg_map_notification_points=0x7f060032;
+        public static final int msg_market_is_null=0x7f060040;
+        public static final int msg_nothing_checked=0x7f06003e;
+        public static final int msg_operation_failed=0x7f060044;
+        public static final int msg_sd_card_disabled =0x7f060041;
+        public static final int msg_session_invalid=0x7f06003c;
+        public static final int msg_system_logout=0x7f060043;
+        public static final int msg_teh_error=0x7f06003b;
         public static final int ok=0x7f060016;
         public static final int plans_url=0x7f060030;
         public static final int prompt_customer_id=0x7f060021;

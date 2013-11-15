@@ -13,7 +13,7 @@ import java.util.HashMap;
 
 public class LogWriterSensors {
 	private static LogWriterSensors sInstance;
-	public static final String APPEND_PATH = "/sdcard/WifiSearcherFingerprint/";
+	public static final String APPEND_PATH = "/sdcard/Fingerprint2/";
 	public static final String DEFAULT_NAME = "wifi.dev";
 	public static final String NEWLINE = "\r\n";
 	private String currentFile;

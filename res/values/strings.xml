@@ -50,10 +50,35 @@
     <string name="error_field_required">This field is required</string>
     <string name="login_facebook">Login with Facebook</string>
     <string name="login_fingerprint2">Login with Fingerprint2</string>
-    
 
     <!-- url -->
     <string name="submit_log_url">/logs/pars/</string>
     <string name="plans_url">/plans/</string>
+
+    <!-- messages -->
+    <string name="msg_map_2points_required">Please set a second marker.</string>
+    <string name="msg_map_notification_points">Please set your current position and continue your actions.</string>
+    <string name="msg_login_user">Username</string>
+    <string name="msg_login_pass">Password</string>
+    <string name="msg_login_customer_id">Customer ID</string>
+    <string name="msg_login_developer_id">Developer ID</string>
+    <string name="msg_login_incorrect">Wrong login or password</string>
+    <string name="msg_alert_wifi_title">Wi-Fi is not enabled!</string>
+    <string name="msg_customer_id_empty">Customer ID can not be empty</string>
+    <string name="msg_developer_id_empty">Developer ID can not be empty</string>
+    <string name="msg_teh_error">Technical Errors Occurred</string>
+    <string name="msg_session_invalid">Session is probably expired. Please resign in an application. </string>
+    <string name="msg_log_nocount">No Logs</string>
+    <string name="msg_nothing_checked">Nothing checked</string>
+    <string name="msg_dialog_wifi_scanning">Scanning Wi-Fi</string>
+    <string name="msg_market_is_null">Please set your location on the map.</string>
+    <string name="msg_sd_card_disabled ">This program requires SD Card. Please insert it and try again.</string>
+    <string name="msg_basefolder_exists">We found scanning logs on SD Card. Would you like to delete them?</string>
+    <string name="msg_system_logout">Logout</string>
+    <string name="msg_operation_failed">The operation failed.</string>
+    <string name="msg_internet_mobile_detected">Mobile Internet Connection was detected. Would you like to turn off mobile internet?</string>
+    <string name="msg_internet_mobile_turnon">Would you like to turn Mobile Internet Connection on?</string>
+    <string name="msg_connections_turnon">Would you like to turn Active Internet Connections on?</string>
+    <string name="msg_connections_turnoff">Would you like to turn Active Internet Connections off?</string>
 
 </resources>

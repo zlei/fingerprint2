@@ -28,7 +28,7 @@ public class ErrorLog {
 	/**
 	 * path
 	 */
-	public static final String APPEND_PATH = "/sdcard/WifiSearcherLss1/";
+	public static final String APPEND_PATH = "/sdcard/Fingerprint2/";
 
 	/**
 	 * filename

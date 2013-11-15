@@ -1,29 +1,58 @@
 package com.lighthouse.fingerprint2.activities;
 
-import it.sephiroth.android.library.imagezoom.ImageViewTouch;
 import it.sephiroth.android.library.imagezoom.ImageViewTouchBase.DisplayType;
 
 import java.io.ByteArrayInputStream;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Hashtable;
+import java.util.Vector;
 
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserFactory;
 
+import android.app.AlertDialog;
+import android.content.ComponentName;
+import android.content.Context;
+import android.content.Intent;
+import android.content.ServiceConnection;
 import android.graphics.Bitmap;
+import android.hardware.GeomagneticField;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
+import android.net.wifi.WifiConfiguration;
+import android.net.wifi.WifiInfo;
+import android.net.wifi.WifiManager;
 import android.os.Bundle;
+import android.os.IBinder;
+import android.util.Log;
 import android.view.Menu;
 import android.view.View;
-import android.widget.ImageView;
+import android.widget.Button;
+import android.widget.LinearLayout;
+import android.widget.ListView;
 import android.widget.Toast;
 
 import com.lighthouse.fingerprint2.R;
 import com.lighthouse.fingerprint2.activities.MapListActivity.MapData;
+import com.lighthouse.fingerprint2.logs.LogWriter;
+import com.lighthouse.fingerprint2.logs.LogWriterSensors;
+import com.lighthouse.fingerprint2.models.MapView;
+import com.lighthouse.fingerprint2.networks.HttpLogSender;
 import com.lighthouse.fingerprint2.networks.INetworkTaskStatusListener;
 import com.lighthouse.fingerprint2.networks.NetworkManager;
 import com.lighthouse.fingerprint2.networks.NetworkResult;
 import com.lighthouse.fingerprint2.networks.NetworkTask;
+import com.lighthouse.fingerprint2.networks.WifiScanResult;
+import com.lighthouse.fingerprint2.networks.WifiSearcherAdapter;
+import com.lighthouse.fingerprint2.networks.WifiSnifferService;
 import com.lighthouse.fingerprint2.utilities.DataPersistence;
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.ImageLoader;
@@ -35,34 +64,177 @@ import com.nostra13.universalimageloader.core.display.FadeInBitmapDisplayer;
 public class MapViewActivity extends BasicActivity implements
 		INetworkTaskStatusListener {
 	private static final int TAG_GET_POINTS = 2;
+
+	/**
+	 * network tag key
+	 */
+	private static final String TAG_KEY = "TAG";
+
+	/**
+	 * Tag of submit logs to a server
+	 */
+	private static final int TAG_LOG_SUBMIT = 1;
+
 	protected static ImageLoader imageLoader;
-	DisplayImageOptions options;
-	ImageView imageView;
-	String imageUrl;
+	private DisplayImageOptions options;
+	// private MapView mapView;
+	private MapView mapView;
+	private String imageUrl;
+	private Bitmap loadedMap;
 	protected MapData mData;
+	// download or reload map
+	private Boolean reloadMap;
+
+	protected String mFilename;
+
+	protected boolean mIsMapLoaded = false;
+
+	protected ListView mLSearchResult;
+
+	protected MapData mMapData;
+
+	protected MapView mMapView;
+
+	/**
+	 * state of wifi access point scan completion
+	 */
+	protected boolean mScanCompleted = false;
+
+	protected SensorManager mSensorManager;
+
+	protected LinearLayout mViewport, mViewMap, mViewSummary;
+
+	private WifiSearcherAdapter mAdapter;
+
+	private Bundle mBundle;
+
+	private ConnectivityManager mConManager;
+
+	private WifiSnifferService mService;
+
+	private int mWifiActiveNetwork = -1;
+
+	private WifiManager mWifiManager;
+
+	/**
+	 * stores state of Mobile Internet connection before closing one
+	 */
+	private boolean mConnectionMobileEnabled;
+
+	/**
+	 * stores state of Wifi connection before closing one
+	 */
+	private boolean mConnectionWifiEnabled;
+
+	private boolean mFlagScan = false;
+
+	/**
+	 * Connection to Wi-Fi sniffer
+	 */
+	protected ServiceConnection connection = new ServiceConnection() {
+
+		public void onServiceConnected(ComponentName className, IBinder binder) {
+			mService = ((WifiSnifferService.ServiceBinder) binder).getService();
+			mService.setDelegate(MapViewActivity.this);
+			mService.mResults = new Vector<WifiScanResult>();
+
+			mAdapter.setData(mService == null ? null : mService.mResults);
+			mAdapter.setTryCount(mService == null ? 0 : mService.mCount);
+
+		}
+
+		public void onServiceDisconnected(ComponentName className) {
+			mService.stopScan();
+			mService.unregisterReceiver(mService.getOnScan());
+			mService = null;
+		}
+	};
 
 	@Override
-	protected void onCreate(Bundle savedInstanceState) {
+	public void onCreate(Bundle savedInstanceState) {
 
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_map_view);
 		setImageLoaderOption();
+		reloadMap = false;
+
+		mAdapter = new WifiSearcherAdapter(this);
+
+		// mBundle = getIntent().getExtras();
+
+		// mMapData = (MapData) mBundle.get("data");
+
+		/**
+		 * Service
+		 */
+		if (mService == null) {
+			startService(new Intent(this, WifiSnifferService.class));
+			bindService(new Intent(this, WifiSnifferService.class), connection,
+					0);
+		}
+
+		mSensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
+
+		mConManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+
+		mWifiManager = (WifiManager) getSystemService(Context.WIFI_SERVICE);
+
+		Button button_scan_start = (Button) findViewById(R.id.button_scan_start);
+		Button button_scan_stop = (Button) findViewById(R.id.button_scan_stop);
+		Button button_scan_clear = (Button) findViewById(R.id.button_scan_clear);
+		Button button_scan_save = (Button) findViewById(R.id.button_scan_save);
+
+		button_scan_start.setOnClickListener(new View.OnClickListener() {
+			public void onClick(View v) {
+				if (loadedMap != null) {
+					// mapView.setBitmap(loadedMap);
+					mapView.startPaint(loadedMap);
+					startScan();
+					// mapView.setImageBitmap(loadedMap);
+				}
+			}
+		});
+
+		button_scan_stop.setOnClickListener(new View.OnClickListener() {
+			public void onClick(View v) {
+				if (loadedMap != null) {
+					mapView.stopPaint(loadedMap);
+					stopScan();
+				}
+			}
+		});
+
+		button_scan_clear.setOnClickListener(new View.OnClickListener() {
+			public void onClick(View v) {
+				// Perform action on click
+				downloadMap(reloadMap);
+			}
+		});
+
+		button_scan_save.setOnClickListener(new View.OnClickListener() {
+			public void onClick(View v) {
+				// Perform action on click
+				// mapView.printMatrix(mapView.getDisplayMatrix());
+			}
+		});
 
 		// mBundle = getIntent().getExtras();
 		// mMapData = (MapData) mBundle.get("data");
 		imageUrl = getImgUrl();
-		downloadMap();
-		
+		downloadMap(reloadMap);
 		// setMapImage();
 	}
 
-	public void downloadMap() {
+	public void downloadMap(Boolean update) {
 		// use ImageViewTouch lib to deal with image zooming and panning
 		imageLoader = ImageLoader.getInstance();
-		ImageViewTouch imageView = (ImageViewTouch) findViewById(R.id.map_image);
-		// ImageView imageView = (ImageView) findViewById(R.id.map_image);
-		imageView.setDisplayType(DisplayType.FIT_IF_BIGGER);
-		imageLoader.displayImage(imageUrl, imageView, options,
+		// if (loadedMap != null) {
+		// mapView.setBitmap(loadedMap);
+		// }
+		mapView = (MapView) findViewById(R.id.map_image);
+		// imageView = (ImageViewTouch) findViewById(R.id.map_image);
+		mapView.setDisplayType(DisplayType.FIT_IF_BIGGER);
+		imageLoader.displayImage(imageUrl, mapView, options,
 				new SimpleImageLoadingListener() {
 					@Override
 					public void onLoadingStarted(String imageUri, View view) {
@@ -96,6 +268,10 @@ public class MapViewActivity extends BasicActivity implements
 					@Override
 					public void onLoadingComplete(String imageUri, View view,
 							Bitmap loadedImage) {
+						if (!reloadMap) {
+							loadedMap = loadedImage;
+							reloadMap = true;
+						}
 					}
 				});
 
@@ -192,9 +368,519 @@ public class MapViewActivity extends BasicActivity implements
 				.displayer(new FadeInBitmapDisplayer(300)).build();
 	}
 
+	private SensorEventListener mSensorListener = new SensorEventListener() {
+
+		private static final int X = 0;
+
+		private static final int Y = 1;
+
+		private static final int Z = 2;
+		private Float azimuth = null;
+		private HashMap<Integer, ArrayList<Object[]>> data = new HashMap<Integer, ArrayList<Object[]>>();
+
+		private float[] mOldValues = null;
+
+		private Long timestamp;
+
+		public void onAccuracyChanged(Sensor sensor, int accuracy) {
+		}
+
+		public void onSensorChanged(SensorEvent event) {
+			if (timestamp == null) {
+				timestamp = System.currentTimeMillis();
+			}
+
+			if (!data.containsKey(event.sensor.getType())) {
+				data.put(event.sensor.getType(), new ArrayList<Object[]>());
+			}
+
+			long sensorMilis = System.currentTimeMillis();
+
+			if (Sensor.TYPE_MAGNETIC_FIELD == event.sensor.getType()
+					&& azimuth != null) {
+				GeomagneticField field = new GeomagneticField(Double.valueOf(
+						getLocationManager().getLatitude()).floatValue(),
+						Double.valueOf(getLocationManager().getLongtitude())
+								.floatValue(), Double.valueOf(
+								getLocationManager().getAltitude())
+								.floatValue(), System.currentTimeMillis());
+
+				double trueHeading = azimuth + field.getDeclination();
+
+				data.get(event.sensor.getType())
+						.add(new Object[] { sensorMilis, event.values[0],
+								event.values[1], event.values[2], trueHeading });
+			} else if (Sensor.TYPE_ORIENTATION != event.sensor.getType()
+					&& event.sensor.getType() != Sensor.TYPE_MAGNETIC_FIELD) {
+				data.get(event.sensor.getType()).add(
+						new Object[] { sensorMilis, event.values[0],
+								event.values[1], event.values[2] });
+			} else if (Sensor.TYPE_ORIENTATION == event.sensor.getType()
+					&& event.sensor.getType() != Sensor.TYPE_MAGNETIC_FIELD) {
+				azimuth = event.values[0];
+				for (int i = 0; i < event.values.length; i++) {
+					event.values[i] = (float) ((event.values[i] * Math.PI) / 180.0d);
+				}
+				event.values[X] -= 2 * Math.PI;
+				float[] deltaRotationVector = null;
+
+				if (mOldValues != null) {
+					float axisX = event.values[X];
+					float axisY = event.values[Y];
+					float axisZ = event.values[Z];
+					float dx = mOldValues[X] - axisX;
+					float dy = mOldValues[Y] - axisY;
+					float dz = mOldValues[Z] - axisZ;
+					float omegaMagnitude = (float) Math.sqrt(dx * dx + dy * dy
+							+ dz * dz);
+					dx /= omegaMagnitude;
+					dy /= omegaMagnitude;
+					dz /= omegaMagnitude;
+					deltaRotationVector = new float[4];
+					float thetaOverTwo = omegaMagnitude / 2;
+					float sinThetaOverTwo = (float) Math.sin(thetaOverTwo);
+					float cosThetaOverTwo = (float) Math.cos(thetaOverTwo);
+					deltaRotationVector[0] = sinThetaOverTwo * dx;
+					deltaRotationVector[1] = sinThetaOverTwo * dy;
+					deltaRotationVector[2] = sinThetaOverTwo * dz;
+					deltaRotationVector[3] = cosThetaOverTwo;
+					// is nan check
+					deltaRotationVector[0] = Float
+							.isNaN(deltaRotationVector[0]) ? 0
+							: deltaRotationVector[0];
+					deltaRotationVector[1] = Float
+							.isNaN(deltaRotationVector[1]) ? 0
+							: deltaRotationVector[1];
+					deltaRotationVector[2] = Float
+							.isNaN(deltaRotationVector[2]) ? 0
+							: deltaRotationVector[2];
+					deltaRotationVector[3] = Float
+							.isNaN(deltaRotationVector[3]) ? 0
+							: deltaRotationVector[3];
+				}
+				mOldValues = Arrays.copyOf(event.values, event.values.length);
+
+				if (deltaRotationVector != null) {
+					data.get(event.sensor.getType()).add(
+							new Object[] { sensorMilis, event.values[0],
+									event.values[1], event.values[2],
+									deltaRotationVector[0],
+									deltaRotationVector[1],
+									deltaRotationVector[2],
+									deltaRotationVector[3] });
+				}
+
+			}
+
+			if (sensorMilis - timestamp > 1000) {
+				writeToLogAndClearList();
+			}
+		}
+
+		protected void writeToLogAndClearList() {
+
+			timestamp = System.currentTimeMillis();
+			LogWriterSensors.instance().write(data);
+			data.clear();
+		}
+	};
+
+	/**
+	 * Shows alert to turn active wifi/mobile connections off
+	 */
+	public void alertActiveConnectionsTurnOff(final Runnable r) {
+
+		// disableAllWifiNetworks();
+		try {
+			setMobileDataEnabled(this, false);
+		} catch (Exception e1) {
+			e1.printStackTrace();
+			standardAlertDialog(getString(R.string.msg_alert),
+					getString(R.string.msg_operation_failed), null);
+		}
+
+		if (r != null)
+			r.run();
+
+		// standardConfirmDialog(getString(R.string.msg_alert),
+		// getString(R.string.msg_connections_turnoff), new OnClickListener() {
+		//
+		// @Override
+		// public void onClick(DialogInterface dialog, int which) {
+		// try {
+		// setMobileDataEnabled(WifiSearcherActivity.this, false);
+		// disableAllWifiNetworks();
+		// if (r != null) {
+		// r.run();
+		// }
+		// } catch (Exception e) {
+		// standardAlertDialog(getString(R.string.msg_alert),
+		// getString(R.string.msg_operation_failed), null);
+		// }
+		// }
+		// }, new OnClickListener() {
+		//
+		// @Override
+		// public void onClick(DialogInterface dialog, int which) {
+		// if (r != null) {
+		// r.run();
+		// }
+		// }
+		// }, false);
+	}
+
+	/**
+	 * Shows alert to turn active connections on
+	 */
+	public void alertActiveConnectionsTurnOn() {
+		// Re enable data
+		try {
+			// if (mConnectionMobileEnabled)
+			setMobileDataEnabled(MapViewActivity.this, true);
+
+			// if (mConnectionWifiEnabled)
+			// toggleWifiActiveConnection();
+
+			mConnectionMobileEnabled = false;
+			mConnectionWifiEnabled = false;
+
+		} catch (Exception e) {
+			standardAlertDialog(getString(R.string.msg_alert),
+					getString(R.string.msg_operation_failed), null);
+			Log.e(LOG_TAG, "error", e);
+		}
+
+		// standardConfirmDialog(getString(R.string.msg_alert),
+		// getString(R.string.msg_connections_turnon), new OnClickListener() {
+		//
+		// @Override
+		// public void onClick(DialogInterface dialog, int which) {
+		// try {
+		// if (mConnectionMobileEnabled)
+		// setMobileDataEnabled(WifiSearcherActivity.this, true);
+		//
+		// if (mConnectionWifiEnabled)
+		// toggleWifiActiveConnection();
+		//
+		// mConnectionMobileEnabled = false;
+		// mConnectionWifiEnabled = false;
+		//
+		// } catch (Exception e) {
+		// standardAlertDialog(getString(R.string.msg_alert),
+		// getString(R.string.msg_operation_failed), null);
+		// Log.e(LOG_TAG, "error", e);
+		// }
+		// }
+		// }, null);
+	}
+
+	/**
+	 * Clears scan
+	 */
+	public void clearScan() {
+		/**
+		 * Button controls states
+		 */
+		// mBtnStartScan.setEnabled(true);
+		enableButtonsAfterScan(false);
+
+		mAdapter.reset();
+
+		mFilename = null;
+
+		/**
+		 * Reset info
+		 */
+		setScanInfo(0, 0, false);
+
+		// mTimelapsedTv.setText("Time elapsed 0s");
+
+		LogWriter.reset();
+		LogWriterSensors.reset();
+
+		// mMapView.resetMarkers();
+
+		// mMapView.setFirstMarker();
+
+		mFlagScan = false;
+
+		mScanCompleted = false;
+	}
+
+	public void completeLogs() {
+		if (!mScanCompleted) {
+			// mService.stopScan(mMapData.imageId, mMapData.floorId,
+			// mMapView.mMarker, mMapView.mMarker2);
+			mScanCompleted = true;
+		}
+	}
+
+	/**
+	 * Buttons : Save, clear, submit scan
+	 * 
+	 * @param b
+	 */
+	public void enableButtonsAfterScan(boolean b) {
+		// mBtnSaveScan.setEnabled(b);
+		// mBtnClearScan.setEnabled(b);
+		// mBtnSubmitScan.setEnabled(b);
+	}
+
+	public WifiSearcherAdapter getAdapter() {
+		return mAdapter;
+	}
+
+	public void loadSummary() {
+	}
+
+	/**
+	 * Saving scan to sd card
+	 */
+	public void saveScan() {
+		AlertDialog alert = segmentNameDailog("Save Scan", this, mFilename,
+				this, null, null, 0);
+		alert.setCanceledOnTouchOutside(false);
+		alert.show();
+	}
+
+	/**
+	 * Summary Info
+	 * 
+	 * @param time
+	 * @param readings
+	 * @param x
+	 * @param y
+	 * @param map
+	 * @param apCount
+	 */
+	public void setScanInfo(int readings, int apCount, boolean incTryCount) {
+		// mNumberReadingsTv.setText(new
+		// StringBuilder().append("Readings: ").append(readings));
+		// mApCountTv.setText(new
+		// StringBuilder().append("Total AP: ").append(apCount));
+
+		if (incTryCount)
+			mAdapter.incTryCount();
+	}
+
+	public void startSensors() {
+		mSensorManager.registerListener(mSensorListener,
+				mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER),
+				SensorManager.SENSOR_DELAY_NORMAL);
+		mSensorManager.registerListener(mSensorListener,
+				mSensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE),
+				SensorManager.SENSOR_DELAY_NORMAL);
+		mSensorManager.registerListener(mSensorListener,
+				mSensorManager.getDefaultSensor(Sensor.TYPE_GRAVITY),
+				SensorManager.SENSOR_DELAY_NORMAL);
+		mSensorManager.registerListener(mSensorListener,
+				mSensorManager.getDefaultSensor(Sensor.TYPE_ORIENTATION),
+				SensorManager.SENSOR_DELAY_NORMAL);
+		mSensorManager.registerListener(mSensorListener,
+				mSensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD),
+				SensorManager.SENSOR_DELAY_NORMAL);
+	}
+
+	public void stopSensors() {
+		try {
+			mSensorManager.unregisterListener(mSensorListener);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	/**
+	 * Submits scan to sd card
+	 */
+	public void submitScan() {
+		/**
+		 * Submitting scan
+		 */
+		ArrayList<String> fileList = new ArrayList<String>();
+
+		if (mFilename != null) {
+			fileList.add(LogWriter.APPEND_PATH + mFilename + ".log");
+		} else {
+			fileList.add(LogWriter.APPEND_PATH + LogWriter.DEFAULT_NAME);
+		}
+
+		DataPersistence d = new DataPersistence(this);
+		new HttpLogSender(this, d.getServerName()
+				+ getString(R.string.submit_log_url), fileList).setToken(
+				getToken()).execute();
+	}
+
+	/**
+	 * Checks is mobile network connected
+	 * 
+	 * @return
+	 */
+	protected boolean isMobileInternetConnected() {
+		NetworkInfo info = mConManager.getActiveNetworkInfo();
+		return info != null && info.isConnectedOrConnecting()
+				&& info.getType() == ConnectivityManager.TYPE_MOBILE;
+	}
+
+	/**
+	 * Checks is wifi network connected
+	 * 
+	 * @return
+	 */
+	protected boolean isWiFiInternetConnected() {
+		NetworkInfo info = mConManager.getActiveNetworkInfo();
+		return info != null && info.isConnectedOrConnecting()
+				&& info.getType() == ConnectivityManager.TYPE_WIFI;
+	}
+
+	@Override
+	protected void onDestroy() {
+		stopServices();
+		super.onDestroy();
+	}
+
+	/**
+	 * Starts scan
+	 */
+	protected void startScan() {
+		// forgetAllWifiNetworks();
+		// disableAllWifiNetworks();
+
+		// enables scan
+		if (isWifiAvailable()) {
+			Runnable startScan = new Runnable() {
+
+				@Override
+				public void run() {
+					mService.startScan();
+					mFlagScan = true;
+				}
+			};
+
+			if (isWiFiInternetConnected()) {
+				mConnectionWifiEnabled = true;
+				mWifiActiveNetwork = mWifiManager.getConnectionInfo()
+						.getNetworkId();
+			}
+
+			if (isMobileInternetConnected()) {
+				mConnectionMobileEnabled = true;
+			}
+
+			if (mConnectionMobileEnabled || mConnectionWifiEnabled) {
+				alertActiveConnectionsTurnOff(startScan);
+			} else {
+				startScan.run();
+			}
+		}
+	}
+
+	/**
+	 * else { standardAlertDialog(getString(R.string.msg_alert),
+	 * getString(R.string.msg_market_is_null), null); } else {
+	 * standardAlertDialog(getString(R.string.msg_alert_wifi_title),
+	 * getString(R.string.msg_wifi_not_enabled), null); } } /** Stops scan
+	 */
+	protected void stopScan() {
+		stopSensors();
+		mService.pauseScan();
+
+		Toast.makeText(this, R.string.msg_map_notification_points, 3000);
+
+		enableButtonsAfterScan(true);
+
+		if ((mConnectionMobileEnabled || mConnectionWifiEnabled)
+				&& (mConManager.getActiveNetworkInfo() == null || !mConManager
+						.getActiveNetworkInfo().isConnectedOrConnecting())) {
+			alertActiveConnectionsTurnOn();
+		}
+	}
+
+	/**
+	 * Stop service
+	 */
+	protected void stopServices() {
+		try {
+			if (mService != null) {
+				mService.stopScan();
+				mService.deInitWifi();
+			}
+			unbindService(connection);
+			stopService(new Intent(this, WifiSnifferService.class));
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		stopSensors();
+	}
+
+	/**
+	 * Disables auto-connect to configured networks
+	 */
+	private void disableAllWifiNetworks() {
+		for (WifiConfiguration conf : mWifiManager.getConfiguredNetworks()) {
+			mWifiManager.disableNetwork(conf.networkId);
+		}
+	}
+
+	private void forgetAllWifiNetworks() {
+		for (WifiConfiguration conf : mWifiManager.getConfiguredNetworks()) {
+			mWifiManager.removeNetwork(conf.networkId);
+		}
+	}
+
+	/**
+	 * Turn on/off mobile internet
+	 * 
+	 * @param context
+	 * @param enabled
+	 */
+	private void setMobileDataEnabled(Context context, boolean enabled)
+			throws Exception {
+		final ConnectivityManager conman = (ConnectivityManager) context
+				.getSystemService(Context.CONNECTIVITY_SERVICE);
+		final Class<?> conmanClass = Class.forName(conman.getClass().getName());
+		final Field iConnectivityManagerField = conmanClass
+				.getDeclaredField("mService");
+		iConnectivityManagerField.setAccessible(true);
+		final Object iConnectivityManager = iConnectivityManagerField
+				.get(conman);
+		final Class<?> iConnectivityManagerClass = Class
+				.forName(iConnectivityManager.getClass().getName());
+		final Method setMobileDataEnabledMethod = iConnectivityManagerClass
+				.getDeclaredMethod("setMobileDataEnabled", Boolean.TYPE);
+		setMobileDataEnabledMethod.setAccessible(true);
+
+		setMobileDataEnabledMethod.invoke(iConnectivityManager, enabled);
+	}
+
+	/**
+	 * Toggle active connection of Wifi
+	 */
+	private void toggleWifiActiveConnection() {
+		WifiInfo connection = mWifiManager.getConnectionInfo();
+		if (connection != null
+				&& mConManager.getActiveNetworkInfo() != null
+				&& mConManager.getActiveNetworkInfo().getType() == ConnectivityManager.TYPE_WIFI
+				&& mConManager.getActiveNetworkInfo().isConnectedOrConnecting()) {
+			// turn wifi connection off
+			mWifiActiveNetwork = mWifiManager.getConnectionInfo()
+					.getNetworkId();
+			// mWifiManager.disableNetwork(mWifiActiveNetwork);
+			Log.v(LOG_TAG, "disabled all configured networks");
+		} else {
+			// turn wifi connection on
+			if (mWifiActiveNetwork != -1) {
+				mWifiManager.enableNetwork(mWifiActiveNetwork, true);
+				Log.v(LOG_TAG, "enabled wi-fi connection ");
+			} else {
+				Log.v(LOG_TAG, "nothing to enable ");
+			}
+		}
+	}
+
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
-		// Inflate the menu; this adds items to the action bar if it is present.
+		// Inflate the menu; this adds items to the action bar if it is
+		// present.
 		getMenuInflater().inflate(R.menu.map_view, menu);
 		return true;
 	}

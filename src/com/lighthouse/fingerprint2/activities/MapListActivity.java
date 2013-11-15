@@ -102,8 +102,8 @@ public class MapListActivity extends BasicActivity implements
 			loadFloors(getBuildingID());
 			break;
 		case R.id.spinner_floor:
-//			String floor_id = floor_table.get(Integer.toString(position));
-//			saveFloorID(floor_id);
+			// String floor_id = floor_table.get(Integer.toString(position));
+			// saveFloorID(floor_id);
 			button_select_map.setEnabled(true);
 			break;
 		}
@@ -280,8 +280,14 @@ public class MapListActivity extends BasicActivity implements
 										.getAttributeValue(null, "height"));
 								mapData.img = parser.getAttributeValue(null,
 										"img");
-								floor_list.add(Integer
-										.toString(mapData.floorId));
+								// floor_list.add(Integer
+								// .toString(mapData.floorId));
+
+								// need to be more accurate, for now it is from
+								// floor 1 to floor n
+								floor_list.add("Floor "
+										+ Integer.toString(counter + 1));
+
 								floor_table.put(Integer.toString(counter),
 										Integer.toString(mapData.floorId));
 								counter++;

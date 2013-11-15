@@ -16,6 +16,7 @@ import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemLongClickListener;
@@ -28,8 +29,6 @@ import com.lighthouse.fingerprint2.logs.LogWriter;
 import com.lighthouse.fingerprint2.logs.LogWriterSensors;
 import com.lighthouse.fingerprint2.networks.HttpLogSender;
 import com.lighthouse.fingerprint2.utilities.DataPersistence;
-import com.nostra13.universalimageloader.core.ImageLoader;
-import com.nostra13.universalimageloader.core.ImageLoaderConfiguration;
 
 public class MainMenuActivity extends BasicActivity {
 
@@ -50,6 +49,8 @@ public class MainMenuActivity extends BasicActivity {
 	private static final int DIALOG_ID_COUNTRIES = 3;
 
 	protected String[] files;
+
+	public static final int logout_menu = Menu.FIRST + 1;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -90,7 +91,6 @@ public class MainMenuActivity extends BasicActivity {
 				// Perform action on click
 			}
 		});
-
 
 	}
 
@@ -400,8 +400,23 @@ public class MainMenuActivity extends BasicActivity {
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		// Inflate the menu; this adds items to the action bar if it is present.
-		getMenuInflater().inflate(R.menu.main_menu, menu);
-		return true;
+		boolean result = super.onCreateOptionsMenu(menu);
+		menu.add(0, logout_menu, 0, "Logout");
+		// getMenuInflater().inflate(R.menu.main_menu, menu);
+		return result;
+	}
+
+	public boolean onOptionsItemSelected(MenuItem item) {
+		// TODO Auto-generated method stub
+		switch (item.getItemId()) {
+		case logout_menu:
+			Intent intent = new Intent(MainMenuActivity.this,
+					LoginActivity.class);
+			startActivity(intent);
+			finish();
+			break;
+		}
+		return super.onOptionsItemSelected(item);
 	}
 
 }

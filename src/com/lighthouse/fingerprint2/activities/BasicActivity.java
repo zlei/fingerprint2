@@ -11,8 +11,10 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.provider.Settings;
 import android.text.InputType;
 import android.util.Log;
 import android.view.View;
@@ -318,7 +320,6 @@ public class BasicActivity extends Activity {
 					String mode = segmode.getSelectedItem().toString().trim();
 					String name = nameinput.getText().toString().trim()
 							.replaceAll("[^0-9a-zA-Z]", "_");
-					// name = name.replace("π", "pi").replace("Π","pi");
 
 					if (num.isEmpty()) {
 						standardAlertDialog("Warning",
@@ -408,6 +409,43 @@ public class BasicActivity extends Activity {
 					}
 				});
 		return alert.create();
+	}
+
+	/**
+	 * Is Wi-Fi enabled
+	 * 
+	 * @param context
+	 * @return
+	 */
+	public boolean isWifiAvailable() {
+		// Log.d("Fingerprint", "Checking if wifi is available.");
+		ConnectivityManager connectivityManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+		NetworkInfo networkInfo = null;
+		if (connectivityManager != null) {
+			// Log.d("Fingerprint", "Connectivity Manager is not null");
+			networkInfo = connectivityManager
+					.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
+		}
+		// Log.d("Fingerprint", "networkinfo null? " + (networkInfo == null));
+		// Log.d("Fingerprint", "detailedstate " +
+		// (NetworkInfo.DetailedState)networkInfo.getDetailedState());
+		// Log.d("Fingerprint", "state " +
+		// (NetworkInfo.State)networkInfo.getState());
+		// Log.d("Fingerprint", "extrainfo " + networkInfo.getExtraInfo());
+		// Log.d("Fingerprint", "isavailable" + networkInfo.isAvailable());
+		return networkInfo == null ? false : networkInfo.isAvailable();
+	}
+
+	/**
+	 * Is gps enabled
+	 * 
+	 * @return
+	 */
+	public boolean isGpsEnabled() {
+		String provider = Settings.Secure.getString(getContentResolver(),
+				Settings.Secure.LOCATION_PROVIDERS_ALLOWED);
+
+		return provider.contains("gps");
 	}
 
 	// safe long to int convert

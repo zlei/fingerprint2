@@ -12,7 +12,6 @@ import android.content.Intent;
 import android.content.SharedPreferences.Editor;
 import android.os.Build;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.KeyEvent;
@@ -35,11 +34,6 @@ import com.lighthouse.fingerprint2.utilities.DataPersistence;
  */
 public class LoginActivity extends BasicActivity implements
 		INetworkTaskStatusListener {
-
-	/**
-	 * The default Username to populate the Username field with.
-	 */
-	public static final String EXTRA_Username = "com.example.android.authenticatordemo.extra.Username";
 
 	/**
 	 * Keep track of the login task to ensure we can cancel it if requested.
@@ -127,6 +121,7 @@ public class LoginActivity extends BasicActivity implements
 	 * If there are form errors (invalid Username, missing fields, etc.), the
 	 * errors are presented and no actual login attempt is made.
 	 */
+
 	public void attemptLogin() {
 
 		// Reset errors.
@@ -313,15 +308,5 @@ public class LoginActivity extends BasicActivity implements
 			break;
 		}
 	}
-	/*
-	 * @Override protected void onPostExecute(final Boolean success) { mAuthTask
-	 * = null; showProgress(false);
-	 * 
-	 * if (success) { finish(); } else { mPasswordView
-	 * .setError(getString(R.string.error_incorrect_password));
-	 * mPasswordView.requestFocus(); } }
-	 * 
-	 * @Override protected void onCancelled() { mAuthTask = null;
-	 * showProgress(false); } }
-	 */
+
 }

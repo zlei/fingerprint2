@@ -37,8 +37,6 @@ import com.lighthouse.fingerprint2.logs.LogWriter;
 /**
  * HttpLogSender
  * 
- * @author Kuban Dzhakipov <kuban.dzhakipov@sibers.com>
- * @version SVN: $Id$
  */
 public class HttpLogSender extends AsyncTask<Void, Integer, Long> {
 

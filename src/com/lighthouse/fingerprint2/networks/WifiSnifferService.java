@@ -41,7 +41,6 @@ import com.lighthouse.fingerprint2.utilities.Utils;
 /**
  * Wi-Fi sniffer
  * 
- * @version SVN: $Id$
  */
 public class WifiSnifferService extends Service {
 
@@ -109,7 +108,7 @@ public class WifiSnifferService extends Service {
 
 			newResults = mWifiManager.getScanResults(); // Returns a <list> of
 			////////////////////wifi information//////////////
-			Log.d("results", newResults.toString());
+			//Log.d("results", newResults.toString());
 
 			counter++;
 

@@ -321,12 +321,6 @@ public class MainMenuActivity extends BasicActivity {
 						public boolean onItemLongClick(AdapterView<?> parent,
 								View view, final int position, long id) {
 
-							AlertDialog segmentNameAlert = segmentNameDailog(
-									"Rename Segment", ald.getContext(),
-									files[position], null, view, files,
-									position);
-							segmentNameAlert.setCanceledOnTouchOutside(false);
-							segmentNameAlert.show();
 							return false;
 						}
 					});

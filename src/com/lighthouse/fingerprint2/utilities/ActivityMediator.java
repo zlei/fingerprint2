@@ -13,8 +13,6 @@ import android.os.Bundle;
 /**
  * Activity Mediator to run different parts of activities
  * 
- * @author Kuban Dzhakipov <kuban.dzhakipov@sibers.com>
- * @version SVN: $Id$
  */
 public class ActivityMediator {
   

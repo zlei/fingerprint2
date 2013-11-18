@@ -14,8 +14,6 @@ import com.lighthouse.fingerprint2.activities.MapListActivity;
 /**
  * Application Activity Mediator
  * 
- * @author Kuban Dzhakipov <kuban.dzhakipov@sibers.com>
- * @version SVN: $Id$
  */
 public class AppActivityMediator extends ActivityMediator {
 

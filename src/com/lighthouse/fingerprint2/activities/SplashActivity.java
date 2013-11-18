@@ -14,7 +14,10 @@ import com.lighthouse.fingerprint2.R;
 public class SplashActivity extends BasicActivity {
 
 	private static int SPLASH_TIME_OUT = 0;
-
+	
+	/**
+	 * To let user choose login method: Facebook or Lighthouse
+	 */
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -56,6 +59,9 @@ public class SplashActivity extends BasicActivity {
 
 	}
 
+	/**
+	 * To decide first login or not
+	 */
 	public void firstLogin() {
 		Button button_login_facebook = (Button) findViewById(R.id.login_facebook);
 		button_login_facebook.setOnClickListener(new View.OnClickListener() {
@@ -81,7 +87,9 @@ public class SplashActivity extends BasicActivity {
 
 	}
 
-	// fade splash screen to main activity
+	/**
+	 * fade splash screen to main activity
+	 */
 	public void fadeSplash() {
 		new Handler().postDelayed(new Runnable() {
 			@Override
@@ -100,7 +108,9 @@ public class SplashActivity extends BasicActivity {
 		}, SPLASH_TIME_OUT);
 	}
 
-	// Declined terms and conditions, exit app
+	/**
+	 * Declined terms and conditions, exit app
+	 */
 	public void exitSplash() {
 		new Handler().postDelayed(new Runnable() {
 			@Override

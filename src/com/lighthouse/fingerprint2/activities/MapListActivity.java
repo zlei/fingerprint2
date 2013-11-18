@@ -81,6 +81,9 @@ public class MapListActivity extends BasicActivity implements
 		});
 	}
 
+	/**
+	 * deal with spinners
+	 */
 	public void onItemSelected(AdapterView<?> parent, View view, int position,
 			long arg3) {
 		int id = parent.getId();
@@ -164,6 +167,10 @@ public class MapListActivity extends BasicActivity implements
 		spnFloor.setOnItemSelectedListener(this);
 	}
 
+	/**
+	 *  load building map
+	 * @param position
+	 */
 	void loadBuildings(int position) {
 		// to find it is gps or changed
 		building_list = new ArrayList<String>();

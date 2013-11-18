@@ -18,8 +18,6 @@ import android.os.Build;
 /**
  * Error Log
  * 
- * @author Kuban Dzhakipov <kuban.dzhakipov@sibers.com>
- * @version SVN: $Id: ActivationActivity.java 13 2011-07-12 10:33:20Z dzhakipov$
  */
 public class ErrorLog {
 

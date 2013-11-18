@@ -198,7 +198,7 @@ public class MapViewActivity extends BasicActivity implements
 		button_scan_stop.setOnClickListener(new View.OnClickListener() {
 			public void onClick(View v) {
 				if (loadedMap != null) {
-					mapView.stopPaint(loadedMap);
+					mapView.stopPaint();
 					stopScan();
 				}
 			}
@@ -352,6 +352,9 @@ public class MapViewActivity extends BasicActivity implements
 		}
 	}
 
+	/**
+	 * set options for image loader, mainly about cache issues
+	 */
 	private void setImageLoaderOption() {
 		options = new DisplayImageOptions.Builder()
 				// .showImageForEmptyUri(R.drawable.ic_empty)
@@ -487,6 +490,8 @@ public class MapViewActivity extends BasicActivity implements
 
 	/**
 	 * Shows alert to turn active wifi/mobile connections off
+	 * 
+	 * DO NOT TURN OFF FOR NOW
 	 */
 	public void alertActiveConnectionsTurnOff(final Runnable r) {
 
@@ -634,16 +639,6 @@ public class MapViewActivity extends BasicActivity implements
 	}
 
 	/**
-	 * Saving scan to sd card
-	 */
-	public void saveScan() {
-		AlertDialog alert = segmentNameDailog("Save Scan", this, mFilename,
-				this, null, null, 0);
-		alert.setCanceledOnTouchOutside(false);
-		alert.show();
-	}
-
-	/**
 	 * Summary Info
 	 * 
 	 * @param time
@@ -774,12 +769,6 @@ public class MapViewActivity extends BasicActivity implements
 		}
 	}
 
-	/**
-	 * else { standardAlertDialog(getString(R.string.msg_alert),
-	 * getString(R.string.msg_market_is_null), null); } else {
-	 * standardAlertDialog(getString(R.string.msg_alert_wifi_title),
-	 * getString(R.string.msg_wifi_not_enabled), null); } } /** Stops scan
-	 */
 	protected void stopScan() {
 		stopSensors();
 		mService.pauseScan();

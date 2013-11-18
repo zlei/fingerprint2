@@ -19,8 +19,6 @@ import com.lighthouse.fingerprint2.activities.BasicActivity;
 /**
  * Application Location Manager
  * 
- * @author Kuban Dzhakipov <kuban.dzhakipov@sibers.com>
- * @version SVN: $Id$
  */
 public class AppLocationManager implements LocationListener {
 	/**
@@ -96,8 +94,8 @@ public class AppLocationManager implements LocationListener {
 
 		String[] names = new String[mStates.length / 3];
 		for (int i = 0; i < mStates.length; i += 3) {
-			names[i / 3] = (activeState == i) ? new StringBuilder()
-					.append("@").append(mStates[i]).toString() : mStates[i];
+			names[i / 3] = (activeState == i) ? new StringBuilder().append("@")
+					.append(mStates[i]).toString() : mStates[i];
 		}
 
 		return names;
@@ -146,6 +144,5 @@ public class AppLocationManager implements LocationListener {
 	public boolean writeActiveOption(int num) {
 		return mPrefs.edit().putInt(PREFS_STATE_KEY, num).commit();
 	}
-
 
 }

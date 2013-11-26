@@ -1,27 +1,38 @@
-<?xml version="1.0" encoding="utf-8"?>
-<resources>
-
-    <!--
-        Base application theme, dependent on API level. This theme is replaced
-        by AppBaseTheme from res/values-vXX/styles.xml on newer devices.
-    -->
-    <style name="AppBaseTheme" parent="android:Theme.Light">
-        <!--
-            Theme customizations available in newer API levels can go in
-            res/values-vXX/styles.xml, while customizations related to
-            backward-compatibility can go here.
-        -->
+<resources xmlns:android="http://schemas.android.com/apk/res/android">
+	<!-- This is our main ActionBarSherlock theme -->
+    <style name="Theme.Styled" parent="Theme.Sherlock.Light.DarkActionBar">
+        <item name="actionBarStyle">@style/Widget.Styled.ActionBar</item>
+        <item name="android:actionBarStyle">@style/Widget.Styled.ActionBar</item>
+    </style>
+    
+    <!-- This is our ViewPagerIndicator theme. We inherit from the ABS theme -->
+    <style name="Theme.VPI" parent="Theme.Styled">
+       <item name="vpiTabPageIndicatorStyle">@style/CustomTabPageIndicator</item>
+    </style>    
+    
+    <!-- "Implementation" of our ABS custom theme -->
+    <style name="Widget.Styled.ActionBar" parent="Widget.Sherlock.Light.ActionBar.Solid.Inverse">
+        <item name="titleTextStyle">@style/TitleText</item>
+        <item name="android:titleTextStyle">@style/TitleText</item>
+    </style>
+     
+    <!-- "Implementation" of VPI theme. We just set the text size and color. -->
+    <style name="CustomTabPageIndicator" parent="Widget.TabPageIndicator">
+        <item name="android:textSize">16dip</item>
+        <item name="android:textColor">#111</item>
+        <item name="android:background">@drawable/custom_tab_indicator</item>
+    </style>
+     
+    <!-- More customizations for ABS -->
+     <style name="TitleText" >
+        <item name="android:textColor">@android:color/white</item>
+        <item name="android:textSize">17dip</item>
     </style>
 
-    <!-- Application theme. -->
-    <style name="AppTheme" parent="AppBaseTheme">
-        <!-- All customizations that are NOT specific to a particular API-level can go here. -->
-    </style>
-
-    <style name="LoginFormContainer">
-        <item name="android:layout_width">match_parent</item>
-        <item name="android:layout_height">wrap_content</item>
-        <item name="android:padding">16dp</item>
-    </style>
+	<style name="LoginFormContainer">
+		<item name="android:layout_width">match_parent</item>
+		<item name="android:layout_height">wrap_content</item>
+		<item name="android:padding">16dp</item>
+	</style>
 
 </resources>

@@ -1,0 +1,111 @@
+/*!
+\mainpage Overview
+
+LSSLib serves as a location provider for applications that wish to feature accurate Wi-Fi positioning.  There are three main classes that LSSLib uses to provide information to an app using the library.
+<h3> LSSService </h3>
+LSSService is a background service that scans for Wi-Fi networks and sends and receives information with a location server.  LSSService should not interacted with directly.  Instead, use LSSManager. 
+<h3> LSSManager </h3>
+The LSSManager class provides an easy way to setup location updates and manage a LSSService.  It is responsible for creating the LSSService, and starting and stopping it.
+<h3> LSSListener </h3>
+LSSListener is an interface that is implemented by the class in your application that will be receiving location updates.  It has methods (that your class will implement) that are called with updated information when the LSSService has a new location to report, a newly downloaded map, or updated information.
+<h2>Using LSSLib</h2>
+First, create a LSSManager with your application’s context:
+<p><code><pre>
+	mManager = new LSSManager(this);
+</pre></code>
+You must tell the LSSManager which LSSListener will be receiving updates.  This could be the same activity that contains the LSSManager:
+<p><code><pre>
+	mManager.setListener(this);
+</pre></code>
+or a separate activity:
+<p><code><pre>
+	mManager.setListener(mMapActivity);
+</pre></code>
+
+When you want to begin receiving location updates, call <code>requestLocationUpdates</code>.  The most common way to use LSSService is <code>MODE_CONTINUOUS</code>, which in this example scans for Wi-Fi networks for 5 seconds, every 10 seconds. This means that the user should get an updated location approximately every 15 seconds.
+<p><code><pre>
+	mManager.requestLocationUpdates(LSSService.MODE_CONTINUOUS, 5, 10);
+</pre></code>
+
+Calling <code>removeLocationUpdates</code> stops the LSSService and removes updates:
+<p><code><pre>
+	mManager.removeLocationUpdates();
+</pre></code>
+
+<h2>Selecting Floors</h2>
+LSSManager is used to select any available floors of the building. The following snippet creates and shows a dialog for choosing a floor. It notifies the LSSService of the new floor, and calls the <code>LSSListener</code>’s <code>onNewMapAvailable</code> callback with the newly selected map.
+<p><code><pre>
+	AlertDialog floorDialog = mManager.floorSelectDialog(context);
+	floorDialog.show();
+</pre></code>
+A list of floors can also be retrieved with
+<p><code><pre>
+	ArrayList<Floor> floors = mManager.getFloors();
+</pre></code>
+And then a floor can be selected with
+<p><code><pre>
+	mManager.setFloor(floor);
+</pre></code>
+Where floor is a Floor object that was retrieved with <code>getFloors</code>.  When new floors are available, the LSSListener will be notified in <code>onStatusChanged</code> with the code <code>MSG_FLOORS_AVAIL</code>.
+<p>Finally, the current Floor can be obtained with
+<p><code><pre>
+	mManager.getCurrentFloor();
+</pre></code>
+<h2>Offers</h2>
+LSSLib supports location based offers, which are available to the user when they are at a specific location, (within a geofence). These offers can be accessed with <code>getOffers</code>.  The <code>LSSListener</code> will also be notified with the status code <code>MSG_OFFERS_AVAIL</code> in <code>onStatusChanged(...)</code>.
+<p><code><pre>
+	ArrayList<Offer> offers = mManager.getOffers();
+</pre></code>
+LSSListener will also be notified in the <code>onStatusChanged</code> callback with the code <code>MSG_OFFERS_AVAIL</code>.
+
+<h2>Geo Fences</h2>
+LSSLib can also keep track of geofences that the user is currently within.  To get the geofences, use
+<p><code><pre>
+	ArrayList<Fence> fences = mManager.getFences();
+</pre></code>
+LSSListener will also be notified in the <code>onStatusChanged</code> callback with the code <code>MSG_FENCES_AVAIL</code>.
+
+<h2>LSSListener Callbacks</h2>
+The methods provided by the LSSListener interface are called by LSSService when new information is available.  Here are the three methods that your listener class will implement, and some example useage.
+<h3>Location Updates</h3>
+<code>onLocationChanged</code> notifies the <code>LSSListener</code> of an updated location.  The location is an instance of <code>android.location.Location</code>, where <code>getLatitude</code> and <code>getLongitude</code> return the x and y coordinates on the map respectively, in pixels.  <code>getAccuracy</code> returns the radius of accuracy.
+
+<p><code><pre>
+	public void onLocationChanged(LSSLocation loc){
+	    mapView.setPosition(loc.getLatitude(), loc.getLongitude());
+	    mapView.setRadius(loc.getAccuracy());
+	}
+</pre></code>
+
+<h3>Map Updates</h3>
+<code>onNewMapAvailable</code> is called when the current floor changes or when a new map finishes downloading. For example, when a user selects a floor or when the map downloads for the first time, this callback will be called, providing the image of the newly selected map.
+<p><code><pre>
+	public void onNewMapAvailable(Bitmap map){
+		mapView.setMap(map);
+	}
+</pre></code>
+
+<h3>Status Updates</h3>
+<code>onStatusChanged</code> is called for a variety of different reasons. All of the msgCodes are declared in <a href="interfacecom_1_1lighthousesignal_1_1lsslib_1_1LSSListener.html">LSSListener.java</a>. Many of these status updates are useful for debugging, but some can be used to show relevant information to the user.
+
+<p><code><pre>
+	public void onStatusChanged(String message, int msgCode){
+		...
+		if(msgCode == LSSListener.MSG_ERR_WIFI_NOT_AVAIL){
+			mapView.notify(”Wifi not available”);
+		}
+		...
+	}
+</pre></code>
+
+<h2>Sending Device and User Information</h2>
+Information about the users current device can be sent to the location server to be processed.  To enable this feature, use
+<p><code><pre>
+	LSSService.ADD_DEVICE_INFO = true;
+</pre></code>
+The developer's id and the id of the current user can also be sent by enabling ADD_USER_INFO in LSSService.
+<p><code><pre>
+	LSSService.ADD_USER_INFO = true;
+</pre></code>
+
+*/

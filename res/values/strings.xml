@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <string name="app_name">Fingerprint2</string>
+    <string name="app_name">Fingerprint 2</string>
     <string name="action_settings">Settings</string>
     <string name="title_activity_maplist">MaplistActivity</string>
     <string name="title_activity_settings">Setting</string>

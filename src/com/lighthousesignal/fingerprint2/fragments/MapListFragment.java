@@ -96,6 +96,8 @@ public class MapListFragment extends Fragment implements
 		button_select_map.setOnClickListener(new View.OnClickListener() {
 			public void onClick(View v) {
 				Intent intent = new Intent(mContext, MapViewActivity.class);
+				final String map_info = getBuildingInfo();
+				intent.putExtra("MAP_INFO", map_info);
 				// change to startactivityforresult later
 				startActivity(intent);
 			}
@@ -337,7 +339,7 @@ public class MapListFragment extends Fragment implements
 
 								// need to be more accurate, for now it is from
 								// floor 1 to floor n
-								floor_list.add("Floor "
+								floor_list.add("Floor_"
 										+ Integer.toString(counter + 1));
 
 								floor_table.put(Integer.toString(counter),
@@ -475,6 +477,14 @@ public class MapListFragment extends Fragment implements
 		public String toString() {
 			return name;
 		}
+	}
+
+	private String getBuildingInfo() {
+		String buildingInfo = "";
+		String building = spnBuilding.getSelectedItem().toString();
+		String floor = spnFloor.getSelectedItem().toString();
+		buildingInfo = building + "-" + floor;
+		return buildingInfo;
 	}
 
 	private AppLocationManager getLocationManager() {

@@ -23,6 +23,10 @@
     <string name="select_state">Select State</string>
     <string name="select_building">Select Building</string>
     <string name="select_floor">Select Floor</string>
+    <string name="check_save_1">All current data will be saved to </string>
+    <string name="check_save_2">Are you sure all the data are correct?</string>
+    <string name="yes">Yes</string>
+    <string name="no">No</string>
     <string name="ok">OK</string>
     <string name="msg_alert_connection">Network is not enabled!</string>
     <string name="msg_alert_1">Network is 1!</string>

@@ -1,6 +1,9 @@
 package com.lighthousesignal.fingerprint2.activities;
 
+import java.io.File;
 import java.lang.ref.WeakReference;
+import java.util.ArrayList;
+import java.util.List;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -12,8 +15,20 @@ import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.provider.Settings;
+import android.text.InputType;
+import android.util.Log;
+import android.view.View;
+import android.widget.ArrayAdapter;
+import android.widget.EditText;
+import android.widget.LinearLayout;
+import android.widget.Spinner;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import com.lighthousesignal.fingerprint2.R;
+import com.lighthousesignal.fingerprint2.logs.ErrorLog;
+import com.lighthousesignal.fingerprint2.logs.LogWriter;
+import com.lighthousesignal.fingerprint2.logs.LogWriterSensors;
 import com.lighthousesignal.fingerprint2.utilities.AppLocationManager;
 import com.lighthousesignal.fingerprint2.utilities.DataPersistence;
 import com.nostra13.universalimageloader.core.ImageLoader;
@@ -42,7 +57,7 @@ public class BasicActivity extends Activity {
 	public static String PREF_IMG_URL = "";
 
 	public static final int INTENT_LOGIN_CODE = 100;
-	
+
 	protected String mFilename;
 
 	public SharedPreferences getLocalPreferences() {
@@ -68,7 +83,7 @@ public class BasicActivity extends Activity {
 	 * Gets Location Manager
 	 * 
 	 */
-	
+
 	public AppLocationManager getLocationManager() {
 		if (mLocManager == null || mLocManager.get() == null) {
 			mLocManager = new WeakReference<AppLocationManager>(
@@ -123,6 +138,7 @@ public class BasicActivity extends Activity {
 
 	/**
 	 * save current building id
+	 * 
 	 * @param building_id
 	 */
 	public void saveBuildingID(String building_id) {
@@ -202,6 +218,19 @@ public class BasicActivity extends Activity {
 
 		return alertDialog.create();
 	}
+	
+	/**
+	 * save file dialog
+	 * @param title
+	 * @param context
+	 * @param existingFilename
+	 * @param activity
+	 * @param row
+	 * @param files
+	 * @param files_index
+	 * @return
+	 */
+	
 
 	/**
 	 * Standard Alert Message Dialog
@@ -267,6 +296,7 @@ public class BasicActivity extends Activity {
 
 	/**
 	 * safe long to int convert
+	 * 
 	 * @param l
 	 * @return
 	 */

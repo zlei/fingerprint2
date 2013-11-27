@@ -12,15 +12,15 @@ public final class R {
 		public static final int ic_launcher = 0x7f02007b;
 	}
 	public static final class id {
-		public static final int cancel_button = 0x7f05004e;
-		public static final int confirm_floor_button = 0x7f05004f;
-		public static final int edit_name = 0x7f05004c;
-		public static final int imageView1 = 0x7f050058;
-		public static final int view_pager = 0x7f05004d;
+		public static final int cancel_button = 0x7f050051;
+		public static final int confirm_floor_button = 0x7f050052;
+		public static final int edit_name = 0x7f05004f;
+		public static final int imageView1 = 0x7f05005b;
+		public static final int view_pager = 0x7f050050;
 	}
 	public static final class layout {
-		public static final int floor_fragment_layout = 0x7f030019;
-		public static final int selectable_floor_fragment = 0x7f03001d;
+		public static final int floor_fragment_layout = 0x7f03001a;
+		public static final int selectable_floor_fragment = 0x7f03001e;
 	}
 	public static final class string {
 		public static final int app_name = 0x7f040000;

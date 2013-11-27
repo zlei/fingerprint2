@@ -14,6 +14,7 @@ import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserFactory;
 
 import android.app.Activity;
+import android.app.Dialog;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.hardware.GeomagneticField;
@@ -34,8 +35,10 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.Toast;
 
+import com.actionbarsherlock.view.Window;
 import com.lighthousesignal.fingerprint2.R;
 import com.lighthousesignal.fingerprint2.fragments.MapListFragment.MapData;
 import com.lighthousesignal.fingerprint2.logs.LogWriter;
@@ -57,11 +60,11 @@ import com.nostra13.universalimageloader.core.assist.ImageScaleType;
 import com.nostra13.universalimageloader.core.assist.SimpleImageLoadingListener;
 import com.nostra13.universalimageloader.core.display.FadeInBitmapDisplayer;
 
+public class MapViewActivity extends Activity implements
+		INetworkTaskStatusListener {
 
-public class MapViewActivity extends Activity implements INetworkTaskStatusListener {
-	
 	private static final String LOG_TAG = "LSS F3 MapView";
-	
+
 	private static final int TAG_GET_POINTS = 2;
 
 	/**
@@ -103,14 +106,14 @@ public class MapViewActivity extends Activity implements INetworkTaskStatusListe
 
 	protected LinearLayout mViewport, mViewMap, mViewSummary;
 
-	//private WifiSearcherAdapter mAdapter;
+	// private WifiSearcherAdapter mAdapter;
 	private FingerprintManager mManager;
 
 	private Bundle mBundle;
 
 	private ConnectivityManager mConManager;
 
-	//private WifiSnifferService mService;
+	// private WifiSnifferService mService;
 
 	private int mWifiActiveNetwork = -1;
 
@@ -129,27 +132,29 @@ public class MapViewActivity extends Activity implements INetworkTaskStatusListe
 	private boolean mFlagScan = false;
 
 	/**
+	 * building info get from maplist
+	 */
+	private String map_info;
+
+	/**
 	 * Connection to Wi-Fi sniffer
-	 *
-	protected ServiceConnection connection = new ServiceConnection() {
-
-		public void onServiceConnected(ComponentName className, IBinder binder) {
-			mService = ((WifiSnifferService.ServiceBinder) binder).getService();
-			mService.setDelegate(MapViewActivity.this);
-			mService.mResults = new Vector<WifiScanResult>();
-
-			mAdapter.setData(mService == null ? null : mService.mResults);
-			mAdapter.setTryCount(mService == null ? 0 : mService.mCount);
-
-		}
-
-		public void onServiceDisconnected(ComponentName className) {
-			mService.stopScan();
-			mService.unregisterReceiver(mService.getOnScan());
-			mService = null;
-		}
-	};
-	*/
+	 * 
+	 * protected ServiceConnection connection = new ServiceConnection() {
+	 * 
+	 * public void onServiceConnected(ComponentName className, IBinder binder) {
+	 * mService = ((WifiSnifferService.ServiceBinder) binder).getService();
+	 * mService.setDelegate(MapViewActivity.this); mService.mResults = new
+	 * Vector<WifiScanResult>();
+	 * 
+	 * mAdapter.setData(mService == null ? null : mService.mResults);
+	 * mAdapter.setTryCount(mService == null ? 0 : mService.mCount);
+	 * 
+	 * }
+	 * 
+	 * public void onServiceDisconnected(ComponentName className) {
+	 * mService.stopScan(); mService.unregisterReceiver(mService.getOnScan());
+	 * mService = null; } };
+	 */
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -159,7 +164,7 @@ public class MapViewActivity extends Activity implements INetworkTaskStatusListe
 		setImageLoaderOption();
 		reloadMap = false;
 
-		//mAdapter = new WifiSearcherAdapter(this);
+		// mAdapter = new WifiSearcherAdapter(this);
 		mManager = new FingerprintManager(this);
 
 		// mBundle = getIntent().getExtras();
@@ -168,12 +173,11 @@ public class MapViewActivity extends Activity implements INetworkTaskStatusListe
 
 		/**
 		 * Service
-		 *
-		if (mService == null) {
-			startService(new Intent(this, WifiSnifferService.class));
-			bindService(new Intent(this, WifiSnifferService.class), connection,
-					0);
-		}*/
+		 * 
+		 * if (mService == null) { startService(new Intent(this,
+		 * WifiSnifferService.class)); bindService(new Intent(this,
+		 * WifiSnifferService.class), connection, 0); }
+		 */
 
 		mSensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
 
@@ -185,6 +189,20 @@ public class MapViewActivity extends Activity implements INetworkTaskStatusListe
 		Button button_scan_stop = (Button) findViewById(R.id.button_scan_stop);
 		Button button_scan_clear = (Button) findViewById(R.id.button_scan_clear);
 		Button button_scan_save = (Button) findViewById(R.id.button_scan_save);
+
+		TextView textView_map_info = (TextView) findViewById(R.id.map_info);
+
+		if (savedInstanceState == null) {
+			mBundle = getIntent().getExtras();
+			if (mBundle == null) {
+				map_info = null;
+			} else {
+				map_info = mBundle.getString("MAP_INFO");
+			}
+		} else {
+			map_info = (String) savedInstanceState.getSerializable("MAP_INFO");
+		}
+		textView_map_info.setText("Map info: \n" + map_info);
 
 		button_scan_start.setOnClickListener(new View.OnClickListener() {
 			public void onClick(View v) {
@@ -215,6 +233,7 @@ public class MapViewActivity extends Activity implements INetworkTaskStatusListe
 
 		button_scan_save.setOnClickListener(new View.OnClickListener() {
 			public void onClick(View v) {
+				saveScan();
 				// Perform action on click
 				// mapView.printMatrix(mapView.getDisplayMatrix());
 			}
@@ -289,8 +308,9 @@ public class MapViewActivity extends Activity implements INetworkTaskStatusListe
 		Hashtable<String, String> hash = new Hashtable<String, String>(3);
 		hash.put("imageId", Integer.valueOf(mData.imageId).toString());
 		hash.put("token", DataPersistence.getToken(this));
-		NetworkTask task = new NetworkTask(this, DataPersistence.getServerName(this),
-				"/logs/pars/getpoint", false, hash, true);
+		NetworkTask task = new NetworkTask(this,
+				DataPersistence.getServerName(this), "/logs/pars/getpoint",
+				false, hash, true);
 		task.setTag(TAG_KEY, new Integer(TAG_GET_POINTS));
 		NetworkManager.getInstance().addTask(task);
 	}
@@ -404,15 +424,15 @@ public class MapViewActivity extends Activity implements INetworkTaskStatusListe
 
 			if (Sensor.TYPE_MAGNETIC_FIELD == event.sensor.getType()
 					&& azimuth != null) {
-				
-				AppLocationManager alm = AppLocationManager.getInstance(MapViewActivity.this);
-				
+
+				AppLocationManager alm = AppLocationManager
+						.getInstance(MapViewActivity.this);
+
 				GeomagneticField field = new GeomagneticField(Double.valueOf(
-						alm.getLatitude()).floatValue(),
-						Double.valueOf(alm.getLongtitude())
-								.floatValue(), Double.valueOf(
-								alm.getAltitude())
-								.floatValue(), System.currentTimeMillis());
+						alm.getLatitude()).floatValue(), Double.valueOf(
+						alm.getLongtitude()).floatValue(), Double.valueOf(
+						alm.getAltitude()).floatValue(),
+						System.currentTimeMillis());
 
 				double trueHeading = azimuth + field.getDeclination();
 
@@ -597,7 +617,7 @@ public class MapViewActivity extends Activity implements INetworkTaskStatusListe
 		// mBtnStartScan.setEnabled(true);
 		enableButtonsAfterScan(false);
 
-		//mAdapter.reset();
+		// mAdapter.reset();
 		mManager.reset();
 
 		mFilename = null;
@@ -641,10 +661,8 @@ public class MapViewActivity extends Activity implements INetworkTaskStatusListe
 	}
 
 	/*
-	public WifiSearcherAdapter getAdapter() {
-		return mAdapter;
-	}
-	*/
+	 * public WifiSearcherAdapter getAdapter() { return mAdapter; }
+	 */
 
 	public void loadSummary() {
 	}
@@ -666,7 +684,7 @@ public class MapViewActivity extends Activity implements INetworkTaskStatusListe
 		// StringBuilder().append("Total AP: ").append(apCount));
 
 		if (incTryCount)
-			//mAdapter.incTryCount();
+			// mAdapter.incTryCount();
 			mManager.incTryCount();
 	}
 
@@ -757,7 +775,7 @@ public class MapViewActivity extends Activity implements INetworkTaskStatusListe
 
 				@Override
 				public void run() {
-					//mService.startScan();
+					// mService.startScan();
 					mManager.startScans();
 					mFlagScan = true;
 				}
@@ -783,10 +801,10 @@ public class MapViewActivity extends Activity implements INetworkTaskStatusListe
 
 	protected void stopScan() {
 		stopSensors();
-		//mService.pauseScan();
+		// mService.pauseScan();
 		mManager.stopScans();
 
-		//Toast.makeText(this, R.string.msg_map_notification_points, 3000);
+		// Toast.makeText(this, R.string.msg_map_notification_points, 3000);
 
 		enableButtonsAfterScan(true);
 
@@ -798,19 +816,48 @@ public class MapViewActivity extends Activity implements INetworkTaskStatusListe
 	}
 
 	/**
+	 * Save scan data into log file
+	 */
+	public void saveScan() {
+		final Dialog dialog = new Dialog(MapViewActivity.this);
+		dialog.requestWindowFeature((int) Window.FEATURE_NO_TITLE);
+		dialog.setContentView(R.layout.dialog_savescan);
+		TextView log_file = (TextView) dialog.findViewById(R.id.text_log_name);
+		Button btn_yes = (Button) dialog.findViewById(R.id.button_save_yes);
+		Button btn_no = (Button) dialog.findViewById(R.id.button_save_no);
+		final String log_name = getSaveCheckString();
+		log_file.setText(log_name);
+		final String log_filename = LogWriter.generateFilename() + map_info;
+
+		btn_yes.setOnClickListener(new View.OnClickListener() {
+			public void onClick(View v) {
+				LogWriter.instance().saveLog(log_filename + ".log");
+				LogWriterSensors.instance().saveLog(log_filename + ".dev");
+				dialog.dismiss();
+				Toast.makeText(getApplicationContext(), "Data saved!",
+						Toast.LENGTH_SHORT).show();
+			}
+		});
+		btn_no.setOnClickListener(new View.OnClickListener() {
+			public void onClick(View v) {
+				dialog.dismiss();
+				Toast.makeText(getApplicationContext(), "Data not saved!",
+						Toast.LENGTH_SHORT).show();
+			}
+		});
+		dialog.show();
+	}
+
+	/**
 	 * Stop service
 	 */
 	protected void stopServices() {
-		/*try {
-			if (mService != null) {
-				mService.stopScan();
-				mService.deInitWifi();
-			}
-			unbindService(connection);
-			stopService(new Intent(this, WifiSnifferService.class));
-		} catch (Exception e) {
-			e.printStackTrace();
-		}*/
+		/*
+		 * try { if (mService != null) { mService.stopScan();
+		 * mService.deInitWifi(); } unbindService(connection); stopService(new
+		 * Intent(this, WifiSnifferService.class)); } catch (Exception e) {
+		 * e.printStackTrace(); }
+		 */
 		mManager.stopScans();
 		stopSensors();
 	}
@@ -887,7 +934,7 @@ public class MapViewActivity extends Activity implements INetworkTaskStatusListe
 		getMenuInflater().inflate(R.menu.map_view, menu);
 		return true;
 	}
-	
+
 	/**
 	 * Is Wi-Fi enabled
 	 * 
@@ -916,4 +963,13 @@ public class MapViewActivity extends Activity implements INetworkTaskStatusListe
 		return provider.contains("gps");
 	}
 
+	public String getSaveCheckString() {
+		StringBuilder stringBuilder = new StringBuilder();
+		stringBuilder.append(getString(R.string.check_save_1)).append("\n")
+				.append(LogWriter.generateFilename()).append("-")
+				.append(map_info).append("\n")
+				.append(getString(R.string.check_save_2));
+		return stringBuilder.toString();
+
+	}
 }

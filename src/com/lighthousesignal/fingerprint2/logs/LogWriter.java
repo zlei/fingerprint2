@@ -45,7 +45,7 @@ public class LogWriter {
 	public static final String _scancnt = "scancnt";
 	public static final String _stat = "stat";
 
-	public static final String APPEND_PATH = "/sdcard/Fingerprint3/";
+	public static final String APPEND_PATH = "/sdcard/Fingerprint2/";
 	public static final String DEFAULT_NAME = "wifi.log";
 
 	public static final String NEWLINE = "\r\n";

@@ -927,14 +927,6 @@ public class MapViewActivity extends Activity implements
 		}
 	}
 
-	@Override
-	public boolean onCreateOptionsMenu(Menu menu) {
-		// Inflate the menu; this adds items to the action bar if it is
-		// present.
-		getMenuInflater().inflate(R.menu.map_view, menu);
-		return true;
-	}
-
 	/**
 	 * Is Wi-Fi enabled
 	 * 
@@ -971,5 +963,13 @@ public class MapViewActivity extends Activity implements
 				.append(getString(R.string.check_save_2));
 		return stringBuilder.toString();
 
+	}
+
+	@Override
+	public boolean onCreateOptionsMenu(Menu menu) {
+		// Inflate the menu; this adds items to the action bar if it is
+		// present.
+		getMenuInflater().inflate(R.menu.map_view, menu);
+		return true;
 	}
 }

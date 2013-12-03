@@ -28,6 +28,8 @@
     <string name="yes">Yes</string>
     <string name="no">No</string>
     <string name="ok">OK</string>
+    <string name="settings">Settings</string>
+    <string name="sort_by">Sort By: </string>
     <string name="msg_alert_connection">Network is not enabled!</string>
     <string name="msg_alert_1">Network is 1!</string>
     <string name="msg_alert_2">Network is 2!</string>
@@ -58,6 +60,14 @@
     <!-- url -->
     <string name="submit_log_url">/logs/pars/</string>
     <string name="plans_url">/plans/</string>
+    
+    <!-- review log files options -->
+    <string name="review_on_text">Review in Text</string>
+    <string name="review_on_map">Review on map</string>
+    <string name="send_to_server">Send to server</string>
+    <string name="send_email">Send by email</string>
+    <string name="delete_file">Delete</string>
+    <string name="log_filter">Log Filter: </string>
 
     <!-- messages -->
     <string name="msg_map_2points_required">Please set a second marker.</string>

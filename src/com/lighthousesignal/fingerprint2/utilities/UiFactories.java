@@ -1,5 +1,9 @@
 package com.lighthousesignal.fingerprint2.utilities;
 
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -52,5 +56,21 @@ public class UiFactories {
 			// sometime it loses current window
 			return null;
 		}
+	}
+
+	/**
+	 * get string from file
+	 * @param is
+	 * @return
+	 * @throws Exception
+	 */
+	public static String convertStreamToString(InputStream is) throws Exception {
+	    BufferedReader reader = new BufferedReader(new InputStreamReader(is));
+	    StringBuilder sb = new StringBuilder();
+	    String line = null;
+	    while ((line = reader.readLine()) != null) {
+	      sb.append(line).append("\n");
+	    }
+	    return sb.toString();
 	}
 }

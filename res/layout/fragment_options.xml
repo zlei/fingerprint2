@@ -7,11 +7,20 @@
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin" >
 
-    
-    <TextView
-        android:id="@+id/title_text"
-        android:layout_width="fill_parent"
+    <Button
+        android:id="@+id/button_clear_memory_cache"
+        style="@style/btnStyle"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Options Fragment"/>
+        android:text="@string/clear_memory_cache" />
+
+    <Button
+        android:id="@+id/button_clear_sdcard_cache"
+        style="@style/btnStyle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/button_clear_memory_cache"
+        android:layout_below="@+id/button_clear_memory_cache"
+        android:text="@string/clear_sdcard_cache" />
 
 </RelativeLayout>

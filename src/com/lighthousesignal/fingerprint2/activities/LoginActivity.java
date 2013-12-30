@@ -260,14 +260,15 @@ public class LoginActivity extends BasicActivity implements
 	 * the user.
 	 */
 
+	@Override
 	public void nTaskErr(NetworkResult result) {
 
 		if (result.getResponceCode() == 401)
 			standardAlertDialog(getString(R.string.msg_alert_connection),
-					getString(R.string.msg_alert_3), null);
+					getString(R.string.msg_error_network_401), null);
 		else {
 			standardAlertDialog(getString(R.string.msg_alert_connection),
-					getString(R.string.msg_alert_2), null);
+					getString(R.string.msg_error_network_unknown), null);
 			Log.e(LOG_TAG, "error", result.getException());
 		}
 	}
@@ -304,7 +305,7 @@ public class LoginActivity extends BasicActivity implements
 				finish();
 			} catch (Exception e) {
 				standardAlertDialog(getString(R.string.msg_alert_connection),
-						getString(R.string.msg_alert_1), null);
+						getString(R.string.msg_error_network_unknown), null);
 
 			}
 			break;

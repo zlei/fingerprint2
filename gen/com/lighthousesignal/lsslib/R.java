@@ -8,15 +8,15 @@ package com.lighthousesignal.lsslib;
 
 public final class R {
 	public static final class drawable {
-		public static final int ic_action_search = 0x7f02007a;
-		public static final int ic_launcher = 0x7f02007b;
+		public static final int ic_action_search = 0x7f02007b;
+		public static final int ic_launcher = 0x7f02007c;
 	}
 	public static final class id {
-		public static final int cancel_button = 0x7f060051;
-		public static final int confirm_floor_button = 0x7f060052;
-		public static final int edit_name = 0x7f06004f;
-		public static final int imageView1 = 0x7f060061;
-		public static final int view_pager = 0x7f060050;
+		public static final int cancel_button = 0x7f060052;
+		public static final int confirm_floor_button = 0x7f060053;
+		public static final int edit_name = 0x7f060050;
+		public static final int imageView1 = 0x7f060065;
+		public static final int view_pager = 0x7f060051;
 	}
 	public static final class layout {
 		public static final int floor_fragment_layout = 0x7f03001a;

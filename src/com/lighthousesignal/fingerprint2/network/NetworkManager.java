@@ -28,6 +28,7 @@ public class NetworkManager {
 	}// TODO
 
 	Thread mNetworkThread = new Thread() {
+		@Override
 		public void run() {
 			while (true) {
 				if (mTasks.size() == 0) {
@@ -42,6 +43,7 @@ public class NetworkManager {
 					final NetworkTask task = mTasks.poll();
 					final NetworkResult result = processTask(task);
 					mHandler.post(new Runnable() {
+						@Override
 						public void run() {
 							if (result.getException() == null
 									&& result.getData() != null && result.getData().length > 0)
@@ -99,7 +101,7 @@ public class NetworkManager {
 				os = c.getOutputStream();
 				os.write(task.getParams().getBytes());
 				if (!task.isPostUrlEncoded())
-					os.write(("\r\n--" + task.BOUNDARY + "--\r\n").getBytes());
+					os.write(("\r\n--" + NetworkTask.BOUNDARY + "--\r\n").getBytes());
 			}
 			final int rc = c.getResponseCode();
 			result.setResponceCode(rc);
@@ -108,7 +110,7 @@ public class NetworkManager {
 					|| rc == HttpURLConnection.HTTP_INTERNAL_ERROR) {
 				is = c.getInputStream();
 				byte[] data;
-				int len = (int) c.getContentLength();
+				int len = c.getContentLength();
 				if (len > 0) {
 					int actual = 0;
 					int bytesread = 0;

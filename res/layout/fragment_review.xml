@@ -7,48 +7,56 @@
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin" >
 
-    <TextView
-        android:id="@+id/text_log_filter"
-        android:layout_width="wrap_content"
+    <LinearLayout
+        android:id="@+id/linear_log_filter"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
-        android:text="@string/log_filter" />
+        android:orientation="horizontal" >
 
-    <TextView
-        android:id="@+id/text_sort_by"
-        android:layout_width="wrap_content"
+        <TextView
+            android:id="@+id/text_log_filter"
+            android:layout_width="75dp"
+            android:layout_height="wrap_content"
+            android:text="@string/log_filter" />
+
+        <Spinner
+            android:id="@+id/spinner_log_filter"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_toRightOf="@+id/text_log_filter" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/linear_sort_by"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/text_log_filter"
-        android:text="@string/sort_by" />
+        android:layout_below="@+id/linear_log_filter"
+        android:orientation="horizontal" >
+
+        <TextView
+            android:id="@+id/text_sort_by"
+            android:layout_width="75dp"
+            android:layout_height="wrap_content"
+            android:text="@string/sort_by" />
+
+        <Spinner
+            android:id="@+id/spinner_sort_order"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_toRightOf="@+id/text_sort_by" />
+
+        <Spinner
+            android:id="@+id/spinner_sort_type"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_toRightOf="@+id/spinner_sort_order" />
+    </LinearLayout>
 
     <ListView
         android:id="@+id/listView_filelist"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/spinner_sort_order"
-        android:layout_centerHorizontal="true" >
-
-    </ListView>
-
-    <Spinner
-        android:id="@+id/spinner_sort_order"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignTop="@+id/text_sort_by"
-        android:layout_centerHorizontal="true" />
-
-    <Spinner
-        android:id="@+id/spinner_sort_type"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_above="@+id/listView_filelist"
-        android:layout_alignRight="@+id/listView_filelist" />
-
-    <Spinner
-        android:id="@+id/spinner_log_filter"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignRight="@+id/spinner_sort_order"
-        android:layout_alignTop="@+id/text_log_filter" />
+        android:layout_below="@+id/linear_sort_by" />
 
 </RelativeLayout>

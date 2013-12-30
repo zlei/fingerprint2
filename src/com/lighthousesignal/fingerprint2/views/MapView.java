@@ -2,8 +2,10 @@ package com.lighthousesignal.fingerprint2.views;
 
 import it.sephiroth.android.library.imagezoom.ImageViewTouch;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
@@ -19,6 +21,7 @@ import android.view.DragEvent;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnDragListener;
+import android.view.View.OnLongClickListener;
 import android.view.View.OnTouchListener;
 
 import com.lighthousesignal.fingerprint2.R;
@@ -29,14 +32,15 @@ public class MapView extends ImageViewTouch implements OnTouchListener,
 	private Paint paint = new Paint();
 	private Bitmap loadedMap;
 	private Bitmap paintedMap;
-	private boolean paintMode = false;
+	private Bitmap showLogsMap;
 	private Canvas canvas;
 	private Matrix currentMatrix;
 	private Point realPoint;
 	private Point scaledPoint;
-	private int pointCounter = 0;
+	private int pointCounter;
 	protected Bitmap startPoint, stopPoint;
-	private HashMap<Integer, Point> points = new HashMap<Integer, Point>();
+	private HashMap<Integer, Point> points;
+	private ArrayList<Point> serverPoints;
 
 	public MapView(Context context) {
 		super(context);
@@ -63,12 +67,15 @@ public class MapView extends ImageViewTouch implements OnTouchListener,
 	 * initiate points with drawable image
 	 * 
 	 */
+	@SuppressLint("UseSparseArrays")
 	protected void init() {
 		Resources res = getContext().getResources();
 		startPoint = ((BitmapDrawable) res.getDrawable(R.drawable.arrow_blue))
 				.getBitmap();
 		stopPoint = ((BitmapDrawable) res.getDrawable(R.drawable.arrow_red))
 				.getBitmap();
+		points = new HashMap<Integer, Point>();
+		pointCounter = 0;
 	}
 
 	/**
@@ -88,15 +95,14 @@ public class MapView extends ImageViewTouch implements OnTouchListener,
 		return true;
 	}
 
-	public boolean onDrag(View view, DragEvent event) {
-
-		return true;
-	}
-
 	class Point {
 		float x, y;
 	}
 
+	/**
+	 * setBitmap with current map
+	 * @param loadedMap
+	 */
 	public void setBitmap(Bitmap loadedMap) {
 		this.loadedMap = loadedMap;
 		this.setImageBitmap(loadedMap);
@@ -145,7 +151,10 @@ public class MapView extends ImageViewTouch implements OnTouchListener,
 		updatePaint(paintedMap);
 	}
 
-	public void drawPoint() {
+	/**
+	 * draw point on painted map
+	 */
+	public boolean drawPoint() {
 		paint.setColor(Color.RED);
 		// canvas.drawCircle(scaledPoint.x, scaledPoint.y, 4, paint);
 		// canvas.drawCircle(realPoint.x, realPoint.y, 4, paint);
@@ -155,18 +164,85 @@ public class MapView extends ImageViewTouch implements OnTouchListener,
 		// points.put(pointCounter, realPoint);
 		updatePaint(paintedMap);
 		this.setOnTouchListener(null);
+		return true;
 	}
 
-	public void stopPaint() {
+	/**
+	 * change listeners when stopping painting
+	 * @return
+	 */
+	public boolean stopPaint() {
 		updatePaint(paintedMap);
 		this.setOnTouchListener(null);
 		this.setOnLongClickListener(null);
+		return true;
 	}
 
+	/**
+	 * update canvas with current scaled map
+	 * @param loadedMap
+	 */
 	public void updatePaint(Bitmap loadedMap) {
 		currentMatrix = getDisplayMatrix();
 		this.setImageBitmap(loadedMap, currentMatrix, ZOOM_INVALID,
 				ZOOM_INVALID);
+	}
+
+	/**
+	 * show logs on server 
+	 * @param loadedMap
+	 */
+	public boolean showLogs(Bitmap loadedMap) {
+		showLogsMap = loadedMap;
+		canvas = new Canvas(showLogsMap);
+
+		drawServerPoints();
+		updatePaint(showLogsMap);
+		return true;
+	}
+
+	/**
+	 * draw server logs on map. No real data now, made up several points
+	 * 
+	 * @return
+	 */
+	private boolean drawServerPoints() {
+		// load points here
+		serverPoints = new ArrayList<Point>();
+		Point p1 = new Point();
+		p1.x = 500;
+		p1.y = 250;
+		Point p2 = new Point();
+		p2.x = 500;
+		p2.y = 500;
+		Point p3 = new Point();
+		p3.x = 250;
+		p3.y = 500;
+
+		serverPoints.add(p1);
+		serverPoints.add(p2);
+		serverPoints.add(p3);
+
+		Paint linePaint = new Paint();
+		linePaint.setStyle(Style.STROKE);
+		linePaint.setStrokeWidth(2);
+		linePaint.setColor(Color.BLUE);
+
+		Point prePoint = null;
+		for (Point tempPoint : serverPoints) {
+			canvas.drawBitmap(startPoint, tempPoint.x, tempPoint.y, paint);
+			if (prePoint != null) {
+				float x1 = prePoint.x + 2;
+				float y1 = prePoint.y + 2;
+				float x2 = tempPoint.x + 2;
+				float y2 = tempPoint.y + 2;
+				canvas.drawLine(x1, y1, x2, y2, linePaint);
+			}
+			prePoint = tempPoint;
+			updatePaint(showLogsMap);
+		}
+
+		return true;
 	}
 
 	/**
@@ -189,6 +265,10 @@ public class MapView extends ImageViewTouch implements OnTouchListener,
 		return scaledPoint;
 	}
 
+	/**
+	 * draw lines between points
+	 * @return
+	 */
 	private boolean drawLine() {
 		if (pointCounter > 1) {
 			Paint linePaint = new Paint();
@@ -203,6 +283,27 @@ public class MapView extends ImageViewTouch implements OnTouchListener,
 		}
 		updatePaint(paintedMap);
 		this.setOnTouchListener(this);
+		return true;
+	}
+
+	/**
+	 * on click clear button, clear all stored data. 
+	 * possibly check the data is stored or not, if not, back up data
+	 * 
+	 * @return
+	 */
+	public boolean clearData() {
+		points.clear();
+		pointCounter = 0;
+		return true;
+	}
+
+	/**
+	 * deal with drag points to modify log, TO DO
+	 */
+	@Override
+	public boolean onDrag(View view, DragEvent event) {
+
 		return true;
 	}
 

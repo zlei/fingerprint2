@@ -67,8 +67,7 @@ public class HttpLogSender extends AsyncTask<Void, Integer, Long> {
 	 */
 	protected AlertDialog mLoaderDialog;
 
-	public HttpLogSender(Context context, String url,
-			ArrayList<String> files) {
+	public HttpLogSender(Context context, String url, ArrayList<String> files) {
 		mFiles = files;
 		mUrl = url;
 		mContext = context;
@@ -97,9 +96,8 @@ public class HttpLogSender extends AsyncTask<Void, Integer, Long> {
 	/**
 	 * Sending logs to a server
 	 */
+	@Override
 	protected Long doInBackground(Void... params) {
-
-		
 
 		for (String file : mFiles) {
 			try {
@@ -112,55 +110,56 @@ public class HttpLogSender extends AsyncTask<Void, Integer, Long> {
 				filename = filename.equals(LogWriter.DEFAULT_NAME) ? LogWriter
 						.generateFilename() : filename.replace(".log", "");
 
-						List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>(
-								2);
-						nameValuePairs.add(new BasicNameValuePair("logdata", LogWriter
-								.readFile(file)));
-						nameValuePairs
+				List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>(
+						2);
+				nameValuePairs.add(new BasicNameValuePair("logdata", LogWriter
+						.readFile(file)));
+				nameValuePairs
 						.add(new BasicNameValuePair("scanname", filename));
-						if(mToken!=null)
-							nameValuePairs
-							.add(new BasicNameValuePair("token",  mToken));				
-						nameValuePairs.add(new BasicNameValuePair("device_log",
-								LogWriter.readFile(file.replace(".log", ".dev"))));
-						httppost.setEntity(new UrlEncodedFormEntity(nameValuePairs, "UTF-8"));
+				if (mToken != null)
+					nameValuePairs.add(new BasicNameValuePair("token", mToken));
+				nameValuePairs.add(new BasicNameValuePair("device_log",
+						LogWriter.readFile(file.replace(".log", ".dev"))));
+				httppost.setEntity(new UrlEncodedFormEntity(nameValuePairs,
+						"UTF-8"));
 
-						if (isCancelled())
-							break;
+				if (isCancelled())
+					break;
 
-						// Execute HTTP Post Request
-						HttpResponse response = httpclient.execute(httppost);
+				// Execute HTTP Post Request
+				HttpResponse response = httpclient.execute(httppost);
 
-						if (response.getStatusLine().getStatusCode() != 200) {
-							System.out.println("not 200");
+				if (response.getStatusLine().getStatusCode() != 200) {
+					System.out.println("not 200");
+					throw new Exception("Http code: "
+							+ response.getStatusLine().getStatusCode()
+							+ "\nResponse: "
+							+ readStream(response.getEntity().getContent()));
+				} else {
+					System.out.println("Marking sent" + filename);
+					// TODO
+					// MainMenuActivity.setSentFlags(filename + ".log", 1,
+					// mContext); //Mark file as sent
+				}
+
+				XmlPullParser parser = XmlPullParserFactory.newInstance()
+						.newPullParser();
+
+				parser.setInput(response.getEntity().getContent(), "UTF-8");
+
+				while (parser.getEventType() == XmlPullParser.END_DOCUMENT) {
+					if (parser.getEventType() == XmlPullParser.START_TAG
+							&& parser.getName().equalsIgnoreCase("result")) {
+						parser.next();
+						if (!parser.getText().equals("true")) {
 							throw new Exception("Http code: "
 									+ response.getStatusLine().getStatusCode()
-									+ "\nResponse: "
-									+ readStream(response.getEntity().getContent()));
-						}else{
-							System.out.println("Marking sent" + filename);
-							//TODO
-							//MainMenuActivity.setSentFlags(filename + ".log", 1, mContext);	//Mark file as sent
+									+ "\nResponse: " + parser.getText());
 						}
+					}
+					parser.nextTag();
+				}
 
-						XmlPullParser parser = XmlPullParserFactory.newInstance()
-								.newPullParser();
-
-						parser.setInput(response.getEntity().getContent(), "UTF-8");
-
-						while (parser.getEventType() == XmlPullParser.END_DOCUMENT) {
-							if (parser.getEventType() == XmlPullParser.START_TAG
-									&& parser.getName().equalsIgnoreCase("result")) {
-								parser.next();
-								if (!parser.getText().equals("true")) {
-									throw new Exception("Http code: "
-											+ response.getStatusLine().getStatusCode()
-											+ "\nResponse: " + parser.getText());
-								}
-							}
-							parser.nextTag();
-						}
-						
 			} catch (Exception e) {
 				mException = e;
 				e.printStackTrace();
@@ -171,10 +170,10 @@ public class HttpLogSender extends AsyncTask<Void, Integer, Long> {
 		return null;
 	}
 
-	public HttpLogSender setToken(String token){
+	public HttpLogSender setToken(String token) {
 		mToken = token;
 		return this;
-	}		
+	}
 
 	public static String readStream(InputStream is) {
 		StringBuilder builder = new StringBuilder();
@@ -197,25 +196,28 @@ public class HttpLogSender extends AsyncTask<Void, Integer, Long> {
 	/**
 	 * Dismiss progress bar and show success message
 	 */
+	@Override
 	protected void onPostExecute(Long unused) {
 		mLoaderDialog.dismiss();
 
 		if (!isCancelled()) {
-			if (mException == null){
-//				for(String f : mFiles) {
-//					//Find filename by splitting off directories
-//					String[] tokens = f.split("/");
-//					String fname = tokens[ tokens.length -1 ];
-//					MainActivity.setSentFlags(fname, 1, mContext);	//Mark file as sent
-//				}
-				UiFactories.standardAlertDialog(mContext,
-						mContext.getString(R.string.msg_alert),
-						mContext.getString(R.string.msg_alert_1),
-						null);
-			}else
+			if (mException == null) {
+				// for(String f : mFiles) {
+				// //Find filename by splitting off directories
+				// String[] tokens = f.split("/");
+				// String fname = tokens[ tokens.length -1 ];
+				// MainActivity.setSentFlags(fname, 1, mContext); //Mark file as
+				// sent
+				// }
+				UiFactories
+						.standardAlertDialog(mContext, mContext
+								.getString(R.string.msg_alert), mContext
+								.getString(R.string.msg_alert_connection), null);
+			} else
 				UiFactories.standardAlertDialog(mContext,
 						mContext.getString(R.string.msg_error),
-						mContext.getString(R.string.msg_alert_2), null);
+						mContext.getString(R.string.msg_error_network_unknown),
+						null);
 		}
 	}
 

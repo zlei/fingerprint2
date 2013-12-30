@@ -37,6 +37,7 @@ public class NetworkResult {
 		mData = data;
 	}
 
+	@Override
 	public String toString() {
 		return "RespCode=" + mResponceCode + "\nExc=" + mException + "\n" + " data:" + (mData == null? null : new String(mData));
 	}

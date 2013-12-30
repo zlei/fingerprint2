@@ -55,4 +55,12 @@
         android:layout_alignRight="@+id/button_scan_stop"
         android:text="@string/map_info" />
 
+    <CheckBox
+        android:id="@+id/checkBox_scan_show_logs"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/map_image"
+        android:layout_alignTop="@+id/map_image"
+        android:text="@string/scan_show_logs" />
+
 </RelativeLayout>

@@ -1,38 +1,53 @@
 <resources xmlns:android="http://schemas.android.com/apk/res/android">
-	<!-- This is our main ActionBarSherlock theme -->
+
+    <!-- This is our main ActionBarSherlock theme -->
     <style name="Theme.Styled" parent="Theme.Sherlock.Light.DarkActionBar">
         <item name="actionBarStyle">@style/Widget.Styled.ActionBar</item>
         <item name="android:actionBarStyle">@style/Widget.Styled.ActionBar</item>
     </style>
-    
+
     <!-- This is our ViewPagerIndicator theme. We inherit from the ABS theme -->
     <style name="Theme.VPI" parent="Theme.Styled">
-       <item name="vpiTabPageIndicatorStyle">@style/CustomTabPageIndicator</item>
-    </style>    
-    
+        <item name="vpiTabPageIndicatorStyle">@style/CustomTabPageIndicator</item>
+    </style>
+
     <!-- "Implementation" of our ABS custom theme -->
     <style name="Widget.Styled.ActionBar" parent="Widget.Sherlock.Light.ActionBar.Solid.Inverse">
         <item name="titleTextStyle">@style/TitleText</item>
         <item name="android:titleTextStyle">@style/TitleText</item>
     </style>
-     
+
     <!-- "Implementation" of VPI theme. We just set the text size and color. -->
     <style name="CustomTabPageIndicator" parent="Widget.TabPageIndicator">
         <item name="android:textSize">16dip</item>
         <item name="android:textColor">#111</item>
         <item name="android:background">@drawable/custom_tab_indicator</item>
     </style>
-     
+
     <!-- More customizations for ABS -->
-     <style name="TitleText" >
+    <style name="TitleText">
         <item name="android:textColor">@android:color/white</item>
         <item name="android:textSize">17dip</item>
     </style>
 
-	<style name="LoginFormContainer">
-		<item name="android:layout_width">match_parent</item>
-		<item name="android:layout_height">wrap_content</item>
-		<item name="android:padding">16dp</item>
-	</style>
+    <style name="LoginFormContainer">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:padding">16dp</item>
+    </style>
+
+    <!-- Custom Button -->
+    <style name="btnStyle" parent="@android:style/Widget.Button">
+        <item name="android:textSize">15sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textColor">#5d6153</item>
+        <item name="android:gravity">center</item>
+        <item name="android:shadowColor">#000000</item>
+        <item name="android:shadowDx">1</item>
+        <item name="android:shadowDy">1</item>
+        <item name="android:shadowRadius">0.6</item>
+        <item name="android:background">@drawable/custom_btn</item>
+        <item name="android:padding">10dip</item>
+    </style>
 
 </resources>

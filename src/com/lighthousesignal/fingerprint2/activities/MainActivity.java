@@ -4,7 +4,9 @@ import java.util.List;
 import java.util.Vector;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
@@ -22,6 +24,8 @@ import com.viewpagerindicator.TabPageIndicator;
 
 public class MainActivity extends SherlockFragmentActivity {
 	private PageAdapter mPageAdapter;
+
+	private SharedPreferences mPrefs;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -95,11 +99,20 @@ public class MainActivity extends SherlockFragmentActivity {
 		switch (item.getItemId()) {
 
 		case R.id.action_settings:
-			Intent i = new Intent(this, SettingsActivity.class);
-			startActivity(i);
+			Intent i_settings = new Intent(this, SettingsActivity.class);
+			startActivity(i_settings);
+			break;
+
+		case R.id.action_logout:
+			Intent i_login = new Intent(this, LoginActivity.class);
+			mPrefs = PreferenceManager.getDefaultSharedPreferences(this);
+			/*if (mPrefs.contains(PREF_LOGIN_TOKEN)) {
+				mPrefs.edit().remove(PREF_LOGIN_TOKEN).commit();
+			}*/
+			startActivity(i_login);
+			finish();
 			break;
 		}
-
 		return true;
 	}
 }

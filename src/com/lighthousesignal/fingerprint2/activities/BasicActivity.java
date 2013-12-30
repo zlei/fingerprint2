@@ -1,9 +1,6 @@
 package com.lighthousesignal.fingerprint2.activities;
 
-import java.io.File;
 import java.lang.ref.WeakReference;
-import java.util.ArrayList;
-import java.util.List;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -15,20 +12,8 @@ import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.provider.Settings;
-import android.text.InputType;
-import android.util.Log;
-import android.view.View;
-import android.widget.ArrayAdapter;
-import android.widget.EditText;
-import android.widget.LinearLayout;
-import android.widget.Spinner;
-import android.widget.TextView;
-import android.widget.Toast;
 
 import com.lighthousesignal.fingerprint2.R;
-import com.lighthousesignal.fingerprint2.logs.ErrorLog;
-import com.lighthousesignal.fingerprint2.logs.LogWriter;
-import com.lighthousesignal.fingerprint2.logs.LogWriterSensors;
 import com.lighthousesignal.fingerprint2.utilities.AppLocationManager;
 import com.lighthousesignal.fingerprint2.utilities.DataPersistence;
 import com.nostra13.universalimageloader.core.ImageLoader;
@@ -64,6 +49,7 @@ public class BasicActivity extends Activity {
 		return mPreferences;
 	}
 
+	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 

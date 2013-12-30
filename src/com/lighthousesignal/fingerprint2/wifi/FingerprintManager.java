@@ -5,45 +5,53 @@ import java.util.Vector;
 import android.content.Context;
 import android.util.Log;
 
-import com.lighthousesignal.lsslib.ScanListener;
+import com.lighthousesignal.lsslib.DeviceData;
 import com.lighthousesignal.lsslib.ServiceManager;
-import com.lighthousesignal.lsslib.WifiScanResult;
+import com.lighthousesignal.lsslib.WifiData;
 
-public class FingerprintManager extends ServiceManager implements ScanListener {
+public class FingerprintManager extends ServiceManager<FingerprintService> {
 
 	private int mode = 0;
-	
+
 	public FingerprintManager(Context context) {
-		super(context);
+		super(context, FingerprintService.class);
 	}
 
 	public void startScans() {
 		startService(mode);
 	}
-	
+
 	public void stopScans() {
 		stopService();
 	}
-	
+
+	// TODO
+	// This should be called when the scan is finished
+	// and the logs should be submitted
+	// probably from map view
+	public void finishScans() {
+		// Get wifi data from service from this round
+		Vector<WifiData> collection = ((FingerprintService) mService)
+				.getCollectedData();
+		Log.d("collected data ", collection.toString());
+
+		// Get deviceData instance
+		DeviceData device = DeviceData.getInstance();
+
+		// Make the fingerprint network task.
+		// The network listener may be this,
+		// or perhaps the mapView
+		// NetworkTask task = new V2Util.fingerprintTask(listener, token,
+		// collection, device);
+
+		// TODO Execute task
+	}
+
 	public void incTryCount() {
-		//TODO
+		// TODO?
 	}
-	
+
 	public void reset() {
-		//TODO
-	}
-
-	@Override
-	public void onStatusChanged(int status) {
-		// TODO Auto-generated method stub
-	}
-
-	@Override
-	public void onWifiDataAvailable(Vector<WifiScanResult> data) {
-		// TODO Auto-generated method stub
-		Log.d("LSS FingerprintManger", "Wifi data available.");
-		for(WifiScanResult r : data) {
-			Log.d("LSS FingerprintManger", "\t\t " + r.getSSID());
-		}
+		((FingerprintService) mService).clearCollectedData();
 	}
 }

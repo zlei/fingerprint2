@@ -6,15 +6,15 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.Toast;
 
 import com.lighthousesignal.fingerprint2.R;
 
-public class SplashActivity extends BasicActivity {
-
+public class SplashActivity extends BasicActivity implements OnClickListener {
 	private static int SPLASH_TIME_OUT = 0;
-	
+
 	/**
 	 * To let user choose login method: Facebook or Lighthouse
 	 */
@@ -33,6 +33,7 @@ public class SplashActivity extends BasicActivity {
 					.setMessage(R.string.app_name)
 					.setPositiveButton("Agree",
 							new DialogInterface.OnClickListener() {
+								@Override
 								public void onClick(DialogInterface dialog,
 										int id) {
 									Toast.makeText(getApplicationContext(),
@@ -43,6 +44,7 @@ public class SplashActivity extends BasicActivity {
 							})
 					.setNegativeButton("Decline",
 							new DialogInterface.OnClickListener() {
+								@Override
 								public void onClick(DialogInterface dialog,
 										int id) {
 									Toast.makeText(getApplicationContext(),
@@ -64,26 +66,31 @@ public class SplashActivity extends BasicActivity {
 	 */
 	public void firstLogin() {
 		Button button_login_facebook = (Button) findViewById(R.id.login_facebook);
-		button_login_facebook.setOnClickListener(new View.OnClickListener() {
-			public void onClick(View v) {
-				Intent intent = new Intent(SplashActivity.this,
-						LoginActivity.class);
-				startActivity(intent);
-				finish();
-			}
-		});
-
 		Button button_login_fingerprint2 = (Button) findViewById(R.id.login_fingerprint2);
-		button_login_fingerprint2
-				.setOnClickListener(new View.OnClickListener() {
-					public void onClick(View v) {
-						Intent intent = new Intent(SplashActivity.this,
-								LoginActivity.class);
-						startActivity(intent);
-						finish();
-						// Perform action on click
-					}
-				});
+		button_login_facebook.setOnClickListener(this);
+		button_login_fingerprint2.setOnClickListener(this);
+	}
+
+	@Override
+	public void onClick(View v) {
+		// TODO Auto-generated method stub
+		int id = v.getId();
+		switch (id) {
+		case R.id.login_facebook:
+			Intent i_loginFB = new Intent(SplashActivity.this,
+					LoginActivity.class);
+			startActivity(i_loginFB);
+			finish();
+
+			break;
+		case R.id.login_fingerprint2:
+			Intent i_loginFP = new Intent(SplashActivity.this,
+					LoginActivity.class);
+			startActivity(i_loginFP);
+			finish();
+
+			break;
+		}
 
 	}
 
@@ -119,4 +126,5 @@ public class SplashActivity extends BasicActivity {
 			}
 		}, SPLASH_TIME_OUT);
 	}
+
 }

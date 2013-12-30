@@ -94,6 +94,7 @@ public class MapListFragment extends Fragment implements
 		// addItemsOnSpnState(v);
 		button_select_map = (Button) v.findViewById(R.id.button_select_ok);
 		button_select_map.setOnClickListener(new View.OnClickListener() {
+			@Override
 			public void onClick(View v) {
 				Intent intent = new Intent(mContext, MapViewActivity.class);
 				final String map_info = getBuildingInfo();
@@ -127,6 +128,7 @@ public class MapListFragment extends Fragment implements
 	/**
 	 * deal with spinners
 	 */
+	@Override
 	public void onItemSelected(AdapterView<?> parent, View view, int position,
 			long arg3) {
 		int id = parent.getId();
@@ -152,10 +154,16 @@ public class MapListFragment extends Fragment implements
 		}
 	}
 
+	@Override
 	public void onNothingSelected(AdapterView<?> arg0) {
 		return;
 	}
 
+	/**
+	 * state spinner
+	 * 
+	 * @param v
+	 */
 	public void addItemsOnSpnState(View v) {
 		spnState = (Spinner) v.findViewById(R.id.spinner_state);
 
@@ -180,6 +188,9 @@ public class MapListFragment extends Fragment implements
 		getLocationManager().writeActiveOption(which);
 	}
 
+	/**
+	 * building spinner
+	 */
 	public void addItemOnSpnBuilding() {
 		spnBuilding.setVisibility(View.VISIBLE);
 		textBuilding.setVisibility(View.VISIBLE);
@@ -195,6 +206,9 @@ public class MapListFragment extends Fragment implements
 		spnBuilding.setOnItemSelectedListener(this);
 	}
 
+	/**
+	 * floor spinner
+	 */
 	public void addItemOnSpnFloor() {
 		spnFloor.setVisibility(View.VISIBLE);
 		textFloor.setVisibility(View.VISIBLE);
@@ -243,6 +257,11 @@ public class MapListFragment extends Fragment implements
 
 	}
 
+	/**
+	 * load floors
+	 * 
+	 * @param buildingId
+	 */
 	void loadFloors(String buildingId) {
 
 		String token = DataPersistence.getToken(mContext);
@@ -261,6 +280,9 @@ public class MapListFragment extends Fragment implements
 		NetworkManager.getInstance().addTask(task);
 	}
 
+	/**
+	 * if download success
+	 */
 	@Override
 	public void nTaskSucces(NetworkResult result) {
 		int counter = 0;
@@ -372,6 +394,9 @@ public class MapListFragment extends Fragment implements
 		// mAdapter.setData(mData);
 	}
 
+	/**
+	 * if download error
+	 */
 	@Override
 	public void nTaskErr(NetworkResult result) {
 		Exception e = result.getException();
@@ -380,12 +405,12 @@ public class MapListFragment extends Fragment implements
 				|| (e != null && e.getMessage().contains(
 						"Received authentication challenge is null"))) {
 			UiFactories.standardAlertDialog(mContext,
-					getString(R.string.msg_alert_1),
+					getString(R.string.msg_error_network_401),
 					getString(R.string.msg_alert_connection), null);
 		} else {
 			UiFactories.standardAlertDialog(mContext,
-					getString(R.string.msg_alert_1),
-					getString(R.string.msg_alert_1), null);
+					getString(R.string.msg_error_network_unknown),
+					getString(R.string.msg_alert_connection), null);
 			Log.e(LOG_TAG, "error", result.getException());
 		}
 	}
@@ -428,6 +453,7 @@ public class MapListFragment extends Fragment implements
 			zoom.put(scaly, info);
 		}
 
+		@Override
 		public String toString() {
 			return name;
 		}
@@ -462,6 +488,10 @@ public class MapListFragment extends Fragment implements
 		}
 	}
 
+	/**
+	 * building data
+	 * 
+	 */
 	private class BuildingData implements Comparable<BuildingData> {
 
 		public String name;
@@ -479,6 +509,12 @@ public class MapListFragment extends Fragment implements
 		}
 	}
 
+	/**
+	 * get all building info to pass to mapview activity, need to add more
+	 * information
+	 * 
+	 * @return
+	 */
 	private String getBuildingInfo() {
 		String buildingInfo = "";
 		String building = spnBuilding.getSelectedItem().toString();
@@ -494,6 +530,12 @@ public class MapListFragment extends Fragment implements
 		return AppLocationManager.getInstance(mContext);
 	}
 
+	/**
+	 * long to int cast
+	 * 
+	 * @param l
+	 * @return
+	 */
 	public static int safeLongToInt(long l) {
 		if (l < Integer.MIN_VALUE || l > Integer.MAX_VALUE) {
 			throw new IllegalArgumentException(l

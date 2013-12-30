@@ -14,8 +14,8 @@ import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserFactory;
 
 import android.app.Activity;
-import android.app.Dialog;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.hardware.GeomagneticField;
 import android.hardware.Sensor;
@@ -28,22 +28,23 @@ import android.net.wifi.WifiConfiguration;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.provider.Settings;
 import android.util.Log;
-import android.view.Menu;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.widget.Button;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.actionbarsherlock.view.Window;
 import com.lighthousesignal.fingerprint2.R;
 import com.lighthousesignal.fingerprint2.fragments.MapListFragment.MapData;
 import com.lighthousesignal.fingerprint2.logs.LogWriter;
 import com.lighthousesignal.fingerprint2.logs.LogWriterSensors;
-import com.lighthousesignal.fingerprint2.network.HttpLogSender;
 import com.lighthousesignal.fingerprint2.network.INetworkTaskStatusListener;
 import com.lighthousesignal.fingerprint2.network.NetworkManager;
 import com.lighthousesignal.fingerprint2.network.NetworkResult;
@@ -61,7 +62,7 @@ import com.nostra13.universalimageloader.core.assist.SimpleImageLoadingListener;
 import com.nostra13.universalimageloader.core.display.FadeInBitmapDisplayer;
 
 public class MapViewActivity extends Activity implements
-		INetworkTaskStatusListener {
+		INetworkTaskStatusListener, OnClickListener {
 
 	private static final String LOG_TAG = "LSS F3 MapView";
 
@@ -78,11 +79,17 @@ public class MapViewActivity extends Activity implements
 	private static final int TAG_LOG_SUBMIT = 1;
 
 	protected static ImageLoader imageLoader;
+	// load map options
 	private DisplayImageOptions options;
 	// private MapView mapView;
 	private MapView mapView;
 	private String imageUrl;
-	private Bitmap loadedMap;
+	// map downloaded from server without painting
+	private Bitmap rawMap;
+	// map to draw
+	private Bitmap paintMap;
+	// map to show data from server
+	private Bitmap serverLogMap;
 	protected MapData mData;
 	// download or reload map
 	private Boolean reloadMap;
@@ -110,6 +117,8 @@ public class MapViewActivity extends Activity implements
 	private FingerprintManager mManager;
 
 	private Bundle mBundle;
+
+	private SharedPreferences mPrefs;
 
 	private ConnectivityManager mConManager;
 
@@ -161,15 +170,12 @@ public class MapViewActivity extends Activity implements
 
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_map_view);
+		mPrefs = PreferenceManager.getDefaultSharedPreferences(this);
 		setImageLoaderOption();
 		reloadMap = false;
 
 		// mAdapter = new WifiSearcherAdapter(this);
 		mManager = new FingerprintManager(this);
-
-		// mBundle = getIntent().getExtras();
-
-		// mMapData = (MapData) mBundle.get("data");
 
 		/**
 		 * Service
@@ -189,7 +195,7 @@ public class MapViewActivity extends Activity implements
 		Button button_scan_stop = (Button) findViewById(R.id.button_scan_stop);
 		Button button_scan_clear = (Button) findViewById(R.id.button_scan_clear);
 		Button button_scan_save = (Button) findViewById(R.id.button_scan_save);
-
+		CheckBox checkbox_scan_show_logs = (CheckBox) findViewById(R.id.checkBox_scan_show_logs);
 		TextView textView_map_info = (TextView) findViewById(R.id.map_info);
 
 		if (savedInstanceState == null) {
@@ -204,40 +210,22 @@ public class MapViewActivity extends Activity implements
 		}
 		textView_map_info.setText("Map info: \n" + map_info);
 
-		button_scan_start.setOnClickListener(new View.OnClickListener() {
-			public void onClick(View v) {
-				if (loadedMap != null) {
-					// mapView.setBitmap(loadedMap);
-					mapView.startPaint(loadedMap);
-					startScan();
-					// mapView.setImageBitmap(loadedMap);
-				}
-			}
-		});
+		button_scan_start.setOnClickListener(this);
+		button_scan_stop.setOnClickListener(this);
+		button_scan_clear.setOnClickListener(this);
+		button_scan_save.setOnClickListener(this);
 
-		button_scan_stop.setOnClickListener(new View.OnClickListener() {
-			public void onClick(View v) {
-				if (loadedMap != null) {
-					mapView.stopPaint();
-					stopScan();
-				}
-			}
-		});
-
-		button_scan_clear.setOnClickListener(new View.OnClickListener() {
-			public void onClick(View v) {
-				// Perform action on click
-				downloadMap(reloadMap);
-			}
-		});
-
-		button_scan_save.setOnClickListener(new View.OnClickListener() {
-			public void onClick(View v) {
-				saveScan();
-				// Perform action on click
-				// mapView.printMatrix(mapView.getDisplayMatrix());
-			}
-		});
+		checkbox_scan_show_logs
+				.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+					@Override
+					public void onCheckedChanged(CompoundButton buttonView,
+							boolean isChecked) {
+						if (isChecked)
+							mapView.showLogs(serverLogMap);
+						else
+							mapView.updatePaint(paintMap);
+					}
+				});
 
 		// mBundle = getIntent().getExtras();
 		// mMapData = (MapData) mBundle.get("data");
@@ -246,11 +234,50 @@ public class MapViewActivity extends Activity implements
 		// setMapImage();
 	}
 
+	@Override
+	public void onClick(View v) {
+		// TODO Auto-generated method stub
+		int id = v.getId();
+		switch (id) {
+		case R.id.button_scan_start:
+			if (rawMap != null) {
+				// mapView.setBitmap(rawMap);
+				mapView.startPaint(paintMap);
+				startScan();
+				// mapView.setImageBitmap(rawMap);
+			}
+			break;
+
+		case R.id.button_scan_stop:
+			if (paintMap != null) {
+				mapView.stopPaint();
+				stopScan();
+			}
+			break;
+
+		case R.id.button_scan_save:
+			saveScan();
+			break;
+
+		case R.id.button_scan_clear:
+			// downloadMap(reloadMap);
+			paintMap = rawMap.copy(rawMap.getConfig(), true);
+			mapView.clearData();
+			mapView.updatePaint(rawMap);
+			break;
+		}
+	}
+
+	/**
+	 * dowanload map with imageloader, get all maps
+	 * 
+	 * @param update
+	 */
 	public void downloadMap(Boolean update) {
 		// use ImageViewTouch lib to deal with image zooming and panning
 		imageLoader = ImageLoader.getInstance();
-		// if (loadedMap != null) {
-		// mapView.setBitmap(loadedMap);
+		// if (rawMap != null) {
+		// mapView.setBitmap(rawMap);
 		// }
 		mapView = (MapView) findViewById(R.id.map_image);
 		// imageView = (ImageViewTouch) findViewById(R.id.map_image);
@@ -290,7 +317,12 @@ public class MapViewActivity extends Activity implements
 					public void onLoadingComplete(String imageUri, View view,
 							Bitmap loadedImage) {
 						if (!reloadMap) {
-							loadedMap = loadedImage;
+							rawMap = loadedImage.copy(loadedImage.getConfig(),
+									true);
+							paintMap = loadedImage.copy(
+									loadedImage.getConfig(), true);
+							serverLogMap = loadedImage.copy(
+									loadedImage.getConfig(), true);
 							reloadMap = true;
 						}
 					}
@@ -318,23 +350,25 @@ public class MapViewActivity extends Activity implements
 	/**
 	 * network task error
 	 */
+	@Override
 	public void nTaskErr(NetworkResult result) {
 		// initTitleProgressBar(false);
 
 		if (result.getResponceCode() == 401) {
 			UiFactories.standardAlertDialog(this,
 					getString(R.string.msg_error),
-					getString(R.string.msg_alert_1), null);
+					getString(R.string.msg_error_network_401), null);
 		} else {
 			UiFactories.standardAlertDialog(this,
 					getString(R.string.msg_error),
-					getString(R.string.msg_alert), null);
+					getString(R.string.msg_error_network_unknown), null);
 		}
 	}
 
 	/**
 	 * network task success
 	 */
+	@Override
 	public void nTaskSucces(NetworkResult result) {
 		try {
 			XmlPullParser parser = XmlPullParserFactory.newInstance()
@@ -379,17 +413,20 @@ public class MapViewActivity extends Activity implements
 	 * set options for image loader, mainly about cache issues
 	 */
 	private void setImageLoaderOption() {
+		// cache map or not
+		boolean toCacheMap;
+		toCacheMap = mPrefs.getBoolean("checkbox_cache_map", true);
+
 		options = new DisplayImageOptions.Builder()
 				// .showImageForEmptyUri(R.drawable.ic_empty)
 				// .showImageOnFail(R.drawable.ic_error)
 				.showImageForEmptyUri(R.drawable.ic_launcher)
 				.showImageOnFail(R.drawable.ic_launcher)
 				.resetViewBeforeLoading(true)
-				.cacheInMemory(true)
 				// cache to memory
-				.cacheOnDisc(true)
+				.cacheInMemory(toCacheMap)
 				// cache to SD card
-				.imageScaleType(ImageScaleType.EXACTLY)
+				.cacheOnDisc(toCacheMap).imageScaleType(ImageScaleType.EXACTLY)
 				.bitmapConfig(Bitmap.Config.RGB_565)
 				.displayer(new FadeInBitmapDisplayer(300)).build();
 	}
@@ -408,9 +445,11 @@ public class MapViewActivity extends Activity implements
 
 		private Long timestamp;
 
+		@Override
 		public void onAccuracyChanged(Sensor sensor, int accuracy) {
 		}
 
+		@Override
 		public void onSensorChanged(SensorEvent event) {
 			if (timestamp == null) {
 				timestamp = System.currentTimeMillis();
@@ -715,26 +754,6 @@ public class MapViewActivity extends Activity implements
 	}
 
 	/**
-	 * Submits scan to sd card
-	 */
-	public void submitScan() {
-		/**
-		 * Submitting scan
-		 */
-		ArrayList<String> fileList = new ArrayList<String>();
-
-		if (mFilename != null) {
-			fileList.add(LogWriter.APPEND_PATH + mFilename + ".log");
-		} else {
-			fileList.add(LogWriter.APPEND_PATH + LogWriter.DEFAULT_NAME);
-		}
-
-		new HttpLogSender(this, DataPersistence.getServerName(this)
-				+ getString(R.string.submit_log_url), fileList).setToken(
-				DataPersistence.getToken(this)).execute();
-	}
-
-	/**
 	 * Checks is mobile network connected
 	 * 
 	 * @return
@@ -754,12 +773,6 @@ public class MapViewActivity extends Activity implements
 		NetworkInfo info = mConManager.getActiveNetworkInfo();
 		return info != null && info.isConnectedOrConnecting()
 				&& info.getType() == ConnectivityManager.TYPE_WIFI;
-	}
-
-	@Override
-	protected void onDestroy() {
-		stopServices();
-		super.onDestroy();
 	}
 
 	/**
@@ -799,9 +812,13 @@ public class MapViewActivity extends Activity implements
 		}
 	}
 
+	/**
+	 * stop scan
+	 */
 	protected void stopScan() {
 		stopSensors();
 		// mService.pauseScan();
+		mManager.finishScans();
 		mManager.stopScans();
 
 		// Toast.makeText(this, R.string.msg_map_notification_points, 3000);
@@ -819,33 +836,7 @@ public class MapViewActivity extends Activity implements
 	 * Save scan data into log file
 	 */
 	public void saveScan() {
-		final Dialog dialog = new Dialog(MapViewActivity.this);
-		dialog.requestWindowFeature((int) Window.FEATURE_NO_TITLE);
-		dialog.setContentView(R.layout.dialog_savescan);
-		TextView log_file = (TextView) dialog.findViewById(R.id.text_log_name);
-		Button btn_yes = (Button) dialog.findViewById(R.id.button_save_yes);
-		Button btn_no = (Button) dialog.findViewById(R.id.button_save_no);
-		final String log_name = getSaveCheckString();
-		log_file.setText(log_name);
-		final String log_filename = LogWriter.generateFilename() + map_info;
-
-		btn_yes.setOnClickListener(new View.OnClickListener() {
-			public void onClick(View v) {
-				LogWriter.instance().saveLog(log_filename + ".log");
-				LogWriterSensors.instance().saveLog(log_filename + ".dev");
-				dialog.dismiss();
-				Toast.makeText(getApplicationContext(), "Data saved!",
-						Toast.LENGTH_SHORT).show();
-			}
-		});
-		btn_no.setOnClickListener(new View.OnClickListener() {
-			public void onClick(View v) {
-				dialog.dismiss();
-				Toast.makeText(getApplicationContext(), "Data not saved!",
-						Toast.LENGTH_SHORT).show();
-			}
-		});
-		dialog.show();
+		UiFactories.segmentNameDailog("Save Data", this, null, this).show();
 	}
 
 	/**
@@ -966,10 +957,9 @@ public class MapViewActivity extends Activity implements
 	}
 
 	@Override
-	public boolean onCreateOptionsMenu(Menu menu) {
-		// Inflate the menu; this adds items to the action bar if it is
-		// present.
-		getMenuInflater().inflate(R.menu.map_view, menu);
-		return true;
+	protected void onDestroy() {
+		stopServices();
+		super.onDestroy();
 	}
+
 }

@@ -13,8 +13,6 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
-import android.util.Log;
-
 import com.lighthousesignal.fingerprint2.R;
 
 /**
@@ -136,16 +134,20 @@ public class AppLocationManager implements LocationListener {
 		return 0;
 	}
 
+	@Override
 	public void onLocationChanged(Location loc) {
 		this.loc = loc;
 	}
 
+	@Override
 	public void onProviderDisabled(String provider) {
 	}
 
+	@Override
 	public void onProviderEnabled(String provider) {
 	}
 
+	@Override
 	public void onStatusChanged(String provider, int status, Bundle extras) {
 	}
 

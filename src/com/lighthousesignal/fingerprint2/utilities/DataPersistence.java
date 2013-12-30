@@ -4,7 +4,6 @@ import com.lighthousesignal.fingerprint2.R;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.content.res.Resources;
 
 public class DataPersistence {
 

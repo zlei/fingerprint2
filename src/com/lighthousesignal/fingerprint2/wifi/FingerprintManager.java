@@ -33,10 +33,11 @@ public class FingerprintManager extends ServiceManager<FingerprintService> {
 		// Get wifi data from service from this round
 		Vector<WifiData> collection = ((FingerprintService) mService)
 				.getCollectedData();
-		Log.d("collected data ", collection.toString());
+		Log.d("collected data ", collection.get(0).toJSONArray().toString());
 
 		// Get deviceData instance
 		DeviceData device = DeviceData.getInstance();
+		Log.d("device info", device.toJSON(mContext).toString());
 
 		// Make the fingerprint network task.
 		// The network listener may be this,

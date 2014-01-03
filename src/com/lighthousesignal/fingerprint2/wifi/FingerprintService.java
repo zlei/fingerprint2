@@ -9,7 +9,7 @@ import com.lighthousesignal.lsslib.WifiData;
 
 public class FingerprintService extends ScanService {
 
-	private Vector<WifiData> mWifiData;
+	private Vector<WifiData> mWifiData = new Vector<WifiData>();
 
 	@Override
 	protected void onStatusChanged(int status) {

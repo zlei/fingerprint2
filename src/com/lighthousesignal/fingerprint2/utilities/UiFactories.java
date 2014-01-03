@@ -79,7 +79,7 @@ public class UiFactories {
 		}
 	}
 
-	public static AlertDialog segmentNameDailog(String title,
+	public static AlertDialog saveScanDailog(String title,
 			final Context context, final String existingFilename,
 			final MapViewActivity activity) {
 		final AlertDialog.Builder alert = new AlertDialog.Builder(context);

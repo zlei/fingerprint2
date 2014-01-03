@@ -11,11 +11,16 @@ import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.text.InputType;
+import android.util.SparseBooleanArray;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.Spinner;
@@ -38,6 +43,10 @@ public class ReviewFragment extends Fragment {
 	private Spinner spn_sort_by_type;
 	private Spinner spn_sort_by_order;
 	private Spinner spn_log_filter;
+	private Button btn_multiple_submit;
+	private CheckBox chk_multiple_selection;
+	private Boolean isMultiple = false;
+	private ArrayAdapter<String> mAdapter;
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -53,10 +62,16 @@ public class ReviewFragment extends Fragment {
 		spn_sort_by_type = (Spinner) v.findViewById(R.id.spinner_sort_type);
 		spn_sort_by_order = (Spinner) v.findViewById(R.id.spinner_sort_order);
 		spn_log_filter = (Spinner) v.findViewById(R.id.spinner_log_filter);
+		btn_multiple_submit = (Button) v
+				.findViewById(R.id.button_multiple_submit);
+		chk_multiple_selection = (CheckBox) v
+				.findViewById(R.id.checkBox_multiple_selection);
+
 		initSpn();
 		setFilelist();
 		updateLogFilterSpn();
 		updateSortOrderSpn();
+		updateMultipleSelection();
 		return v;
 	}
 
@@ -69,22 +84,41 @@ public class ReviewFragment extends Fragment {
 		updateLogfileList();
 		updateLogFilter(0);
 		updateSortOrder(0);
-		listView_filelist
-				.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-					@Override
-					public void onItemClick(AdapterView<?> parent, View view,
-							int position, long id) {
-						String filename = listView_filelist.getItemAtPosition(
-								position).toString();
-						setReviewFileOptions(filename);
-						/*
-						 * try { UiFactories.standardAlertDialog(mContext,
-						 * filename, getLogText(filename), null); } catch
-						 * (Exception e) { // TODO Auto-generated catch block
-						 * e.printStackTrace(); } getLogMap();
-						 */// TODO Auto-generated method stub
+		if (!isMultiple) {
+			listView_filelist
+					.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+						@Override
+						public void onItemClick(AdapterView<?> parent,
+								View view, int position, long id) {
+							String filename = listView_filelist
+									.getItemAtPosition(position).toString();
+							setReviewFileOptions(filename);
+							/*
+							 * try { UiFactories.standardAlertDialog(mContext,
+							 * filename, getLogText(filename), null); } catch
+							 * (Exception e) { // TODO Auto-generated catch
+							 * block e.printStackTrace(); } getLogMap();
+							 */// TODO Auto-generated method stub
+						}
+					});
+		} else {
+			listView_filelist.setOnItemClickListener(null);
+			btn_multiple_submit.setOnClickListener(new OnClickListener() {
+				public void onClick(View view) {
+					SparseBooleanArray checked = listView_filelist
+							.getCheckedItemPositions();
+					final ArrayList<String> selectedItems = new ArrayList<String>();
+					for (int i = 0; i < checked.size(); i++) {
+						// Item position in adapter
+						int position = checked.keyAt(i);
+						if (checked.valueAt(i))
+							selectedItems.add(listView_filelist
+									.getItemAtPosition(position).toString());
 					}
-				});
+					setMultipleSelectionOptions(selectedItems);
+				}
+			});
+		}
 		return true;
 	}
 
@@ -166,6 +200,59 @@ public class ReviewFragment extends Fragment {
 		builderSingle.show();
 		return true;
 
+	}
+
+	/**
+	 * set multiple review file options
+	 * 
+	 * @param logfile
+	 * @return
+	 */
+	private boolean setMultipleSelectionOptions(ArrayList<String> logfiles) {
+		final ArrayList<String> filename = logfiles;
+		AlertDialog.Builder builderSingle = new AlertDialog.Builder(mContext);
+		builderSingle.setIcon(R.drawable.ic_launcher);
+		builderSingle.setTitle("Select One: ");
+		final ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(
+				mContext, android.R.layout.select_dialog_item);
+		arrayAdapter.add(mContext.getString(R.string.send_to_server));
+		arrayAdapter.add(mContext.getString(R.string.send_email));
+		builderSingle.setNegativeButton("cancel",
+				new DialogInterface.OnClickListener() {
+					@Override
+					public void onClick(DialogInterface dialog, int which) {
+						dialog.dismiss();
+					}
+				});
+
+		builderSingle.setAdapter(arrayAdapter,
+				new DialogInterface.OnClickListener() {
+
+					@Override
+					public void onClick(DialogInterface dialog, int which) {
+						switch (which) {
+						// send to server
+						case 0:
+							mSFileList.addAll(filename);
+							updateLogFilter(spn_log_filter
+									.getSelectedItemPosition());
+							Toast.makeText(mContext,
+									"Log file sent to server!",
+									Toast.LENGTH_SHORT).show();
+							break;
+						// send by email
+						case 1:
+							mEFileList.addAll(filename);
+							updateLogFilter(spn_log_filter
+									.getSelectedItemPosition());
+							Toast.makeText(mContext, "Log file sent by email!",
+									Toast.LENGTH_SHORT).show();
+							break;
+						}
+					}
+				});
+		builderSingle.show();
+		return true;
 	}
 
 	/**
@@ -284,9 +371,38 @@ public class ReviewFragment extends Fragment {
 		} else if (sortOrder.equals("Descending")) {
 			Collections.sort(mFileList, Collections.reverseOrder());
 		}
-		ArrayAdapter<String> mAdapter = new ArrayAdapter<String>(mContext,
-				android.R.layout.simple_list_item_1, mFileList);
+		if (isMultiple) {
+			mAdapter = new ArrayAdapter<String>(mContext,
+					R.drawable.custom_multiple_selection,
+					mFileList);
+			listView_filelist.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE);
+		} else {
+			mAdapter = new ArrayAdapter<String>(mContext,
+					android.R.layout.simple_list_item_1, mFileList);
+
+		}
+
 		listView_filelist.setAdapter(mAdapter);
+		return true;
+	}
+
+	private boolean updateMultipleSelection() {
+		chk_multiple_selection
+				.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+					public void onCheckedChanged(CompoundButton buttonView,
+							boolean isChecked) {
+						if (isChecked) {
+							isMultiple = true;
+							btn_multiple_submit.setVisibility(View.VISIBLE);
+						} else {
+							isMultiple = false;
+							btn_multiple_submit.setVisibility(View.GONE);
+						}
+						// updateSortOrder(spn_sort_by_order
+						// .getSelectedItemPosition());
+						setFilelist();
+					}
+				});
 		return true;
 	}
 

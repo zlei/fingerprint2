@@ -21,7 +21,6 @@ import android.view.DragEvent;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnDragListener;
-import android.view.View.OnLongClickListener;
 import android.view.View.OnTouchListener;
 
 import com.lighthousesignal.fingerprint2.R;
@@ -32,6 +31,8 @@ public class MapView extends ImageViewTouch implements OnTouchListener,
 	private Paint paint = new Paint();
 	private Bitmap loadedMap;
 	private Bitmap paintedMap;
+	// used for change point
+	private Bitmap tempMap;
 	private Bitmap showLogsMap;
 	private Canvas canvas;
 	private Matrix currentMatrix;
@@ -41,6 +42,7 @@ public class MapView extends ImageViewTouch implements OnTouchListener,
 	protected Bitmap startPoint, stopPoint;
 	private HashMap<Integer, Point> points;
 	private ArrayList<Point> serverPoints;
+	private Boolean isPointChangable;
 
 	public MapView(Context context) {
 		super(context);
@@ -75,7 +77,9 @@ public class MapView extends ImageViewTouch implements OnTouchListener,
 		stopPoint = ((BitmapDrawable) res.getDrawable(R.drawable.arrow_red))
 				.getBitmap();
 		points = new HashMap<Integer, Point>();
-		pointCounter = 0;
+		// 1 for start point, 2 for end point
+		pointCounter = 1;
+		isPointChangable = true;
 	}
 
 	/**
@@ -101,6 +105,7 @@ public class MapView extends ImageViewTouch implements OnTouchListener,
 
 	/**
 	 * setBitmap with current map
+	 * 
 	 * @param loadedMap
 	 */
 	public void setBitmap(Bitmap loadedMap) {
@@ -121,7 +126,7 @@ public class MapView extends ImageViewTouch implements OnTouchListener,
 	 * 
 	 * @param loadedMap
 	 */
-	public void startPaint(Bitmap loadedMap) {
+	public boolean startPaint(Bitmap loadedMap) {
 		paintedMap = loadedMap;
 		canvas = new Canvas(paintedMap);
 		this.setFocusable(true);
@@ -133,11 +138,45 @@ public class MapView extends ImageViewTouch implements OnTouchListener,
 		this.setOnLongClickListener(new OnLongClickListener() {
 			@Override
 			public boolean onLongClick(View view) {
-				if (points.containsValue(scaledPoint)) {
-					dragPoint();
+				/**
+				 * if (points.containsValue(scaledPoint)) { dragPoint(); } else
+				 * {
+				 */
+				if (isPointChangable) {
+					switch (points.size()) {
+					// initiate start point
+					case 0:
+						points.put(pointCounter, scaledPoint);
+						canvas = new Canvas(paintedMap);
+						drawPoint();
+						break;
+					// replace start point
+					case 1:
+						replacePoint(pointCounter);
+						points.put(pointCounter, scaledPoint);
+						paintedMap = tempMap.copy(tempMap.getConfig(), true);
+						canvas = new Canvas(paintedMap);
+						drawPoint();
+						break;
+					// replace end point
+					case 2:
+						replacePoint(pointCounter);
+						points.put(pointCounter, scaledPoint);
+						paintedMap = tempMap.copy(tempMap.getConfig(), true);
+						canvas = new Canvas(paintedMap);
+						drawPoint();
+						drawLine();
+						break;
+					}
 				} else {
-					drawPoint();
-					drawLine();
+					// for now, only draw two points, one line. Might be
+					// multiple lines in the future
+					if (points.size() == 1) {
+						pointCounter++;
+						points.put(pointCounter, scaledPoint);
+						drawPoint();
+						drawLine();
+					}
 				}
 				return true;
 			}
@@ -149,6 +188,12 @@ public class MapView extends ImageViewTouch implements OnTouchListener,
 		// canvas.drawCircle(scaledPoint.x, scaledPoint.y, 2, paint);
 		// }
 		updatePaint(paintedMap);
+		tempMap = paintedMap.copy(paintedMap.getConfig(), true);
+		// For now, only two points one line
+		// if (points.size() == 2) {
+		// this.setOnTouchListener(null);
+		// }
+		return true;
 	}
 
 	/**
@@ -159,16 +204,15 @@ public class MapView extends ImageViewTouch implements OnTouchListener,
 		// canvas.drawCircle(scaledPoint.x, scaledPoint.y, 4, paint);
 		// canvas.drawCircle(realPoint.x, realPoint.y, 4, paint);
 		canvas.drawBitmap(startPoint, scaledPoint.x, scaledPoint.y, paint);
-		pointCounter++;
-		points.put(pointCounter, scaledPoint);
 		// points.put(pointCounter, realPoint);
 		updatePaint(paintedMap);
-		this.setOnTouchListener(null);
+		// this.setOnTouchListener(null);
 		return true;
 	}
 
 	/**
 	 * change listeners when stopping painting
+	 * 
 	 * @return
 	 */
 	public boolean stopPaint() {
@@ -180,6 +224,7 @@ public class MapView extends ImageViewTouch implements OnTouchListener,
 
 	/**
 	 * update canvas with current scaled map
+	 * 
 	 * @param loadedMap
 	 */
 	public void updatePaint(Bitmap loadedMap) {
@@ -189,7 +234,8 @@ public class MapView extends ImageViewTouch implements OnTouchListener,
 	}
 
 	/**
-	 * show logs on server 
+	 * show logs on server
+	 * 
 	 * @param loadedMap
 	 */
 	public boolean showLogs(Bitmap loadedMap) {
@@ -267,6 +313,7 @@ public class MapView extends ImageViewTouch implements OnTouchListener,
 
 	/**
 	 * draw lines between points
+	 * 
 	 * @return
 	 */
 	private boolean drawLine() {
@@ -287,14 +334,41 @@ public class MapView extends ImageViewTouch implements OnTouchListener,
 	}
 
 	/**
-	 * on click clear button, clear all stored data. 
-	 * possibly check the data is stored or not, if not, back up data
+	 * on click clear button, clear all stored data. possibly check the data is
+	 * stored or not, if not, back up data
 	 * 
 	 * @return
 	 */
 	public boolean clearData() {
 		points.clear();
-		pointCounter = 0;
+		pointCounter = 1;
+		return true;
+	}
+
+	public boolean replacePoint(int point) {
+		// start point
+		if (point == 1) {
+			points.remove(1);
+		}
+		// end point
+		if (point == 2) {
+			points.remove(2);
+		}
+		return true;
+	}
+
+	/**
+	 * get start and stop points
+	 */
+	public HashMap<Integer, Point> getPoints() {
+		return points;
+	}
+
+	/**
+	 * set change point or draw lines between points
+	 */
+	public boolean setPointChangable(boolean bool) {
+		isPointChangable = bool;
 		return true;
 	}
 

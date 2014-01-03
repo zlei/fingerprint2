@@ -23,8 +23,7 @@
         <Spinner
             android:id="@+id/spinner_log_filter"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_toRightOf="@+id/text_log_filter" />
+            android:layout_height="wrap_content" />
     </LinearLayout>
 
     <LinearLayout
@@ -43,20 +42,46 @@
         <Spinner
             android:id="@+id/spinner_sort_order"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_toRightOf="@+id/text_sort_by" />
+            android:layout_height="wrap_content" />
 
         <Spinner
             android:id="@+id/spinner_sort_type"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_toRightOf="@+id/spinner_sort_order" />
+            android:layout_height="wrap_content" />
     </LinearLayout>
 
-    <ListView
-        android:id="@+id/listView_filelist"
+    <LinearLayout
+        android:id="@+id/linear_checkbox"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/linear_sort_by" />
+        android:layout_below="@+id/linear_sort_by"
+        android:orientation="horizontal" >
+
+        <CheckBox
+            android:id="@+id/checkBox_multiple_selection"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/multiple_selection" />
+
+        <Button
+            android:id="@+id/button_multiple_submit"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/multiple_submit"
+            android:visibility="gone" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/linear_listview"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/linear_checkbox"
+        android:orientation="horizontal" >
+
+        <ListView
+            android:id="@+id/listView_filelist"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+    </LinearLayout>
 
 </RelativeLayout>

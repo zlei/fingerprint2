@@ -14,7 +14,9 @@ import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserFactory;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.hardware.GeomagneticField;
@@ -145,6 +147,13 @@ public class MapViewActivity extends Activity implements
 	 */
 	private String map_info;
 
+	private Button button_scan_start;
+	private Button button_scan_stop;
+	private Button button_scan_clear;
+	private Button button_scan_save;
+	private CheckBox checkbox_scan_show_logs;
+	private TextView textView_map_info;
+
 	/**
 	 * Connection to Wi-Fi sniffer
 	 * 
@@ -191,12 +200,12 @@ public class MapViewActivity extends Activity implements
 
 		mWifiManager = (WifiManager) getSystemService(Context.WIFI_SERVICE);
 
-		Button button_scan_start = (Button) findViewById(R.id.button_scan_start);
-		Button button_scan_stop = (Button) findViewById(R.id.button_scan_stop);
-		Button button_scan_clear = (Button) findViewById(R.id.button_scan_clear);
-		Button button_scan_save = (Button) findViewById(R.id.button_scan_save);
-		CheckBox checkbox_scan_show_logs = (CheckBox) findViewById(R.id.checkBox_scan_show_logs);
-		TextView textView_map_info = (TextView) findViewById(R.id.map_info);
+		button_scan_start = (Button) findViewById(R.id.button_scan_start);
+		button_scan_stop = (Button) findViewById(R.id.button_scan_stop);
+		button_scan_clear = (Button) findViewById(R.id.button_scan_clear);
+		button_scan_save = (Button) findViewById(R.id.button_scan_save);
+		checkbox_scan_show_logs = (CheckBox) findViewById(R.id.checkBox_scan_show_logs);
+		textView_map_info = (TextView) findViewById(R.id.map_info);
 
 		if (savedInstanceState == null) {
 			mBundle = getIntent().getExtras();
@@ -240,18 +249,84 @@ public class MapViewActivity extends Activity implements
 		int id = v.getId();
 		switch (id) {
 		case R.id.button_scan_start:
-			if (rawMap != null) {
+			if (rawMap != null && mapView.getPoints().size() == 1) {
 				// mapView.setBitmap(rawMap);
-				mapView.startPaint(paintMap);
-				startScan();
-				// mapView.setImageBitmap(rawMap);
+				// mapView.startPaint(paintMap);
+				// only start point
+				AlertDialog.Builder alertDialog = new AlertDialog.Builder(this);
+				alertDialog
+						.setTitle("Start Scan")
+						.setPositiveButton("YES",
+								new DialogInterface.OnClickListener() {
+									public void onClick(DialogInterface dialog,
+											int which) {
+										// if start scan
+										startScan();
+										mapView.setPointChangable(false);
+										button_scan_stop.setEnabled(true);
+										button_scan_start.setEnabled(false);
+										Toast.makeText(getApplicationContext(),
+												"Scan started!",
+												Toast.LENGTH_SHORT).show();
+									}
+								})
+						.setNegativeButton("NO",
+								new DialogInterface.OnClickListener() {
+									public void onClick(DialogInterface dialog,
+											int which) {
+										Toast.makeText(getApplicationContext(),
+												"Scan canceled!",
+												Toast.LENGTH_SHORT).show();
+									}
+								}).setCancelable(true)
+						.setMessage("make sure to start scan?").show();
+			} else {
+				UiFactories.standardAlertDialog(this, "Alert",
+						"Please have start point first!", null);
 			}
+			// enable stop scan button after start service
+			// mapView.setImageBitmap(rawMap);
 			break;
 
 		case R.id.button_scan_stop:
-			if (paintMap != null) {
-				mapView.stopPaint();
+			// exactly two points
+			if (paintMap != null && mapView.getPoints().size() == 2) {
+				// mapView.stopPaint();
 				stopScan();
+				AlertDialog.Builder alertDialog = new AlertDialog.Builder(this);
+				alertDialog
+						.setTitle("Stop Scan")
+						.setPositiveButton("YES",
+								new DialogInterface.OnClickListener() {
+									public void onClick(DialogInterface dialog,
+											int which) {
+										saveScan();
+										button_scan_save.setEnabled(true);
+										Toast.makeText(
+												getApplicationContext(),
+												"Scan successed! Please save the scan",
+												Toast.LENGTH_SHORT).show();
+									}
+								})
+						.setNegativeButton("NO",
+								new DialogInterface.OnClickListener() {
+									public void onClick(DialogInterface dialog,
+											int which) {
+										mapView.setPointChangable(true);
+										button_scan_save.setEnabled(true);
+										Toast.makeText(
+												getApplicationContext(),
+												"Please click on another point! Then save the scan data.",
+												Toast.LENGTH_SHORT).show();
+									}
+								}).setCancelable(true)
+						.setMessage("Is end point correct?").show();
+				// mapView.clearData();
+				// mapView.startPaint(paintMap);
+				button_scan_stop.setEnabled(false);
+			} else {
+				UiFactories.standardAlertDialog(this, "Alert",
+						"Please have end point first!", null);
 			}
 			break;
 
@@ -261,9 +336,17 @@ public class MapViewActivity extends Activity implements
 
 		case R.id.button_scan_clear:
 			// downloadMap(reloadMap);
+			// restart all
 			paintMap = rawMap.copy(rawMap.getConfig(), true);
 			mapView.clearData();
-			mapView.updatePaint(rawMap);
+			mapView.updatePaint(paintMap);
+			mapView.stopPaint();
+			mapView.startPaint(paintMap);
+			// default status for one point
+			mapView.setPointChangable(true);
+			button_scan_stop.setEnabled(false);
+			button_scan_save.setEnabled(false);
+			button_scan_start.setEnabled(true);
 			break;
 		}
 	}
@@ -325,6 +408,8 @@ public class MapViewActivity extends Activity implements
 									loadedImage.getConfig(), true);
 							reloadMap = true;
 						}
+						// set up clickable
+						mapView.startPaint(paintMap);
 					}
 				});
 
@@ -836,7 +921,7 @@ public class MapViewActivity extends Activity implements
 	 * Save scan data into log file
 	 */
 	public void saveScan() {
-		UiFactories.segmentNameDailog("Save Data", this, null, this).show();
+		UiFactories.saveScanDailog("Save Data", this, null, this).show();
 	}
 
 	/**

@@ -72,6 +72,8 @@
     <string name="rename_file">Rename</string>
     <string name="delete_file">Delete</string>
     <string name="log_filter">Log Filter: </string>
+    <string name="multiple_submit">Submit Selected</string>
+    <string name="multiple_selection">Multiple Selection</string>
 
     <!-- messages -->
     <string name="msg_map_2points_required">Please set a second marker.</string>

@@ -1454,118 +1454,119 @@ containing a value of this type.
         /**  Description of a share target (both in the list of such or the default share button) in a ShareActionProvider (share UI). [CHAR LIMIT=NONE] 
          */
         public static final int abs__shareactionprovider_share_with_application=0x7f050008;
-        public static final int action_forgot_password=0x7f05003b;
+        public static final int action_forgot_password=0x7f05003c;
         public static final int action_logout=0x7f05000f;
         public static final int action_settings=0x7f05000e;
-        public static final int action_sign_in=0x7f050039;
-        public static final int action_sign_in_short=0x7f05003a;
+        public static final int action_sign_in=0x7f05003a;
+        public static final int action_sign_in_short=0x7f05003b;
         /**  String related to app 
          */
         public static final int app_name=0x7f050000;
         public static final int buildings=0x7f050018;
-        public static final int check_save_1=0x7f050024;
-        public static final int check_save_2=0x7f050025;
-        public static final int clear_memory_cache=0x7f050029;
-        public static final int clear_sdcard_cache=0x7f05002a;
-        public static final int default_server_url=0x7f050038;
+        public static final int check_save_1=0x7f050025;
+        public static final int check_save_2=0x7f050026;
+        public static final int clear_memory_cache=0x7f05002a;
+        public static final int clear_sdcard_cache=0x7f05002b;
+        public static final int default_server_url=0x7f050039;
         public static final int default_url=0x7f050016;
-        public static final int delete_file=0x7f05004a;
-        public static final int error_field_required=0x7f050040;
-        public static final int error_incorrect_password=0x7f05003f;
-        public static final int error_invalid_password=0x7f05003e;
-        public static final int error_invalid_username=0x7f05003d;
-        public static final int lighthouse_website=0x7f05006c;
-        public static final int log_filter=0x7f05004b;
-        public static final int login_facebook=0x7f050041;
-        public static final int login_fingerprint2=0x7f050042;
-        public static final int login_progress_signing_in=0x7f05003c;
-        public static final int map_info=0x7f050020;
+        public static final int delete_file=0x7f05004b;
+        public static final int error_field_required=0x7f050041;
+        public static final int error_incorrect_password=0x7f050040;
+        public static final int error_invalid_password=0x7f05003f;
+        public static final int error_invalid_username=0x7f05003e;
+        public static final int lighthouse_website=0x7f05006d;
+        public static final int log_filter=0x7f05004c;
+        public static final int login_facebook=0x7f050042;
+        public static final int login_fingerprint2=0x7f050043;
+        public static final int login_progress_signing_in=0x7f05003d;
+        public static final int map_info=0x7f050021;
         public static final int map_lists=0x7f050017;
-        public static final int msg_alert=0x7f05002e;
-        public static final int msg_alert_connection=0x7f05002c;
-        public static final int msg_alert_wifi_title=0x7f050055;
-        public static final int msg_basefolder_exists=0x7f05005f;
-        public static final int msg_connections_turnoff=0x7f050065;
-        public static final int msg_connections_turnon=0x7f050064;
-        public static final int msg_customer_id_empty=0x7f050056;
-        public static final int msg_developer_id_empty=0x7f050057;
-        public static final int msg_dialog_loading=0x7f05002d;
-        public static final int msg_dialog_wifi_scanning=0x7f05005c;
-        public static final int msg_error=0x7f05002f;
-        public static final int msg_error_network_401=0x7f050030;
-        public static final int msg_error_network_unknown=0x7f050031;
-        public static final int msg_internet_mobile_detected=0x7f050062;
-        public static final int msg_internet_mobile_turnon=0x7f050063;
-        public static final int msg_log_nocount=0x7f05005a;
-        public static final int msg_login_customer_id=0x7f050052;
-        public static final int msg_login_developer_id=0x7f050053;
-        public static final int msg_login_incorrect=0x7f050054;
-        public static final int msg_login_pass=0x7f050051;
-        public static final int msg_login_user=0x7f050050;
+        public static final int msg_alert=0x7f05002f;
+        public static final int msg_alert_connection=0x7f05002d;
+        public static final int msg_alert_wifi_title=0x7f050056;
+        public static final int msg_basefolder_exists=0x7f050060;
+        public static final int msg_connections_turnoff=0x7f050066;
+        public static final int msg_connections_turnon=0x7f050065;
+        public static final int msg_customer_id_empty=0x7f050057;
+        public static final int msg_developer_id_empty=0x7f050058;
+        public static final int msg_dialog_loading=0x7f05002e;
+        public static final int msg_dialog_wifi_scanning=0x7f05005d;
+        public static final int msg_error=0x7f050030;
+        public static final int msg_error_network_401=0x7f050031;
+        public static final int msg_error_network_unknown=0x7f050032;
+        public static final int msg_internet_mobile_detected=0x7f050063;
+        public static final int msg_internet_mobile_turnon=0x7f050064;
+        public static final int msg_log_nocount=0x7f05005b;
+        public static final int msg_login_customer_id=0x7f050053;
+        public static final int msg_login_developer_id=0x7f050054;
+        public static final int msg_login_incorrect=0x7f050055;
+        public static final int msg_login_pass=0x7f050052;
+        public static final int msg_login_user=0x7f050051;
         /**  messages 
          */
-        public static final int msg_map_2points_required=0x7f05004e;
-        public static final int msg_map_notification_points=0x7f05004f;
-        public static final int msg_market_is_null=0x7f05005d;
-        public static final int msg_nothing_checked=0x7f05005b;
-        public static final int msg_operation_failed=0x7f050061;
-        public static final int msg_sd_card_disabled =0x7f05005e;
-        public static final int msg_session_invalid=0x7f050059;
-        public static final int msg_system_logout=0x7f050060;
-        public static final int msg_teh_error=0x7f050058;
-        public static final int multiple_selection=0x7f05004d;
-        public static final int multiple_submit=0x7f05004c;
-        public static final int no=0x7f050027;
-        public static final int ok=0x7f050028;
-        public static final int plans_url=0x7f050044;
-        public static final int pref_default_display_name=0x7f05006a;
-        public static final int pref_description_cache_map=0x7f050068;
+        public static final int msg_map_2points_required=0x7f05004f;
+        public static final int msg_map_notification_points=0x7f050050;
+        public static final int msg_market_is_null=0x7f05005e;
+        public static final int msg_nothing_checked=0x7f05005c;
+        public static final int msg_operation_failed=0x7f050062;
+        public static final int msg_sd_card_disabled =0x7f05005f;
+        public static final int msg_session_invalid=0x7f05005a;
+        public static final int msg_system_logout=0x7f050061;
+        public static final int msg_teh_error=0x7f050059;
+        public static final int multiple_selection=0x7f05004e;
+        public static final int multiple_submit=0x7f05004d;
+        public static final int no=0x7f050028;
+        public static final int ok=0x7f050029;
+        public static final int plans_url=0x7f050045;
+        public static final int pref_default_display_name=0x7f05006b;
+        public static final int pref_description_cache_map=0x7f050069;
         /**  Example settings for Data & Sync 
          */
-        public static final int pref_header_data_sync=0x7f05006d;
-        public static final int pref_header_general=0x7f050066;
+        public static final int pref_header_data_sync=0x7f05006e;
+        public static final int pref_header_general=0x7f050067;
         /**  Example settings for Notifications 
          */
-        public static final int pref_header_notifications=0x7f050070;
-        public static final int pref_ringtone_silent=0x7f050073;
-        public static final int pref_title_cache_map=0x7f050067;
-        public static final int pref_title_display_name=0x7f050069;
-        public static final int pref_title_new_message_notifications=0x7f050071;
-        public static final int pref_title_ringtone=0x7f050072;
-        public static final int pref_title_scan_frequency=0x7f05006b;
-        public static final int pref_title_sync_frequency=0x7f05006e;
-        public static final int pref_title_system_sync_settings=0x7f05006f;
-        public static final int pref_title_vibrate=0x7f050074;
-        public static final int prompt_customer_id=0x7f050035;
-        public static final int prompt_developer_id=0x7f050036;
-        public static final int prompt_password=0x7f050034;
-        public static final int prompt_server_url=0x7f050037;
-        public static final int prompt_username=0x7f050033;
-        public static final int rename_file=0x7f050049;
+        public static final int pref_header_notifications=0x7f050071;
+        public static final int pref_ringtone_silent=0x7f050074;
+        public static final int pref_title_cache_map=0x7f050068;
+        public static final int pref_title_display_name=0x7f05006a;
+        public static final int pref_title_new_message_notifications=0x7f050072;
+        public static final int pref_title_ringtone=0x7f050073;
+        public static final int pref_title_scan_frequency=0x7f05006c;
+        public static final int pref_title_sync_frequency=0x7f05006f;
+        public static final int pref_title_system_sync_settings=0x7f050070;
+        public static final int pref_title_vibrate=0x7f050075;
+        public static final int prompt_customer_id=0x7f050036;
+        public static final int prompt_developer_id=0x7f050037;
+        public static final int prompt_password=0x7f050035;
+        public static final int prompt_server_url=0x7f050038;
+        public static final int prompt_username=0x7f050034;
+        public static final int rename_file=0x7f05004a;
         public static final int review_log=0x7f050019;
-        public static final int review_on_map=0x7f050046;
+        public static final int review_on_map=0x7f050047;
         /**  review log files options 
          */
-        public static final int review_on_text=0x7f050045;
+        public static final int review_on_text=0x7f050046;
         public static final int scan_clear=0x7f05001e;
+        public static final int scan_running=0x7f050020;
         public static final int scan_save=0x7f05001d;
         public static final int scan_show_logs=0x7f05001f;
         public static final int scan_start=0x7f05001b;
         public static final int scan_stop=0x7f05001c;
-        public static final int select_building=0x7f050022;
-        public static final int select_floor=0x7f050023;
-        public static final int select_state=0x7f050021;
-        public static final int send_email=0x7f050048;
-        public static final int send_to_server=0x7f050047;
+        public static final int select_building=0x7f050023;
+        public static final int select_floor=0x7f050024;
+        public static final int select_state=0x7f050022;
+        public static final int send_email=0x7f050049;
+        public static final int send_to_server=0x7f050048;
         public static final int shared_preferences_name=0x7f050015;
-        public static final int sort_by=0x7f05002b;
+        public static final int sort_by=0x7f05002c;
         /**  url 
          */
-        public static final int submit_log_url=0x7f050043;
+        public static final int submit_log_url=0x7f050044;
         public static final int terms=0x7f050014;
         /**  Strings related to login 
          */
-        public static final int title_activity_login=0x7f050032;
+        public static final int title_activity_login=0x7f050033;
         public static final int title_activity_main_menu=0x7f050012;
         public static final int title_activity_map_view=0x7f050013;
         public static final int title_activity_maplist=0x7f050010;
@@ -1573,7 +1574,7 @@ containing a value of this type.
          */
         public static final int title_activity_settings=0x7f050011;
         public static final int upload_log=0x7f05001a;
-        public static final int yes=0x7f050026;
+        public static final int yes=0x7f050027;
     }
     public static final class style {
         /**  "Implementation" of VPI theme. We just set the text size and color. 

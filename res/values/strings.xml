@@ -21,6 +21,7 @@
     <string name="scan_save">Save</string>
     <string name="scan_clear">Clear</string>
     <string name="scan_show_logs">Show Logs</string>
+    <string name="scan_running">Scanning..</string>
     <string name="map_info">building name</string>
     <string name="select_state">Select State</string>
     <string name="select_building">Select Building</string>

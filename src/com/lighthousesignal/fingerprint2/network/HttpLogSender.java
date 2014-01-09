@@ -107,19 +107,20 @@ public class HttpLogSender extends AsyncTask<Void, Integer, Long> {
 
 				String filename = file.substring(file.lastIndexOf("/") + 1);
 
-				filename = filename.equals(LogWriter.DEFAULT_NAME) ? LogWriter
-						.generateFilename() : filename.replace(".log", "");
-
+				filename = LogWriter.APPEND_PATH + filename + ".log";
+				// filename = filename.equals(LogWriter.DEFAULT_NAME) ?
+				// LogWriter
+				// .generateFilename() : filename.replace(".log", "");
 				List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>(
 						2);
 				nameValuePairs.add(new BasicNameValuePair("logdata", LogWriter
-						.readFile(file)));
+						.readFile(filename)));
 				nameValuePairs
 						.add(new BasicNameValuePair("scanname", filename));
 				if (mToken != null)
 					nameValuePairs.add(new BasicNameValuePair("token", mToken));
 				nameValuePairs.add(new BasicNameValuePair("device_log",
-						LogWriter.readFile(file.replace(".log", ".dev"))));
+						LogWriter.readFile(filename.replace(".log", ".dev"))));
 				httppost.setEntity(new UrlEncodedFormEntity(nameValuePairs,
 						"UTF-8"));
 

@@ -9,6 +9,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Hashtable;
+import java.util.Timer;
+import java.util.TimerTask;
+import java.util.Vector;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserFactory;
@@ -56,6 +60,8 @@ import com.lighthousesignal.fingerprint2.utilities.DataPersistence;
 import com.lighthousesignal.fingerprint2.utilities.UiFactories;
 import com.lighthousesignal.fingerprint2.views.MapView;
 import com.lighthousesignal.fingerprint2.wifi.FingerprintManager;
+import com.lighthousesignal.lsslib.WifiData;
+import com.lighthousesignal.lsslib.WifiScanResult;
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.assist.FailReason;
@@ -63,12 +69,35 @@ import com.nostra13.universalimageloader.core.assist.ImageScaleType;
 import com.nostra13.universalimageloader.core.assist.SimpleImageLoadingListener;
 import com.nostra13.universalimageloader.core.display.FadeInBitmapDisplayer;
 
+import de.keyboardsurfer.android.widget.crouton.Configuration;
+import de.keyboardsurfer.android.widget.crouton.Crouton;
+import de.keyboardsurfer.android.widget.crouton.Style;
+
 public class MapViewActivity extends Activity implements
 		INetworkTaskStatusListener, OnClickListener {
 
 	private static final String LOG_TAG = "LSS F3 MapView";
 
 	private static final int TAG_GET_POINTS = 2;
+
+	/**
+	 * get preference IDs
+	 */
+	private static String PREF_CUSTOMER_ID = "customer_id";
+
+	private static String PREF_DEVELOPER_ID = "developer_id";
+
+	/**
+	 * building id, image id
+	 */
+	private static int building_ID = -1;
+	private static int image_ID = -1;
+
+	/**
+	 * atomic counter
+	 */
+	private Timer mTimeTicker;
+	private AtomicInteger mTimeElapsed = new AtomicInteger(0);
 
 	/**
 	 * network tag key
@@ -154,25 +183,11 @@ public class MapViewActivity extends Activity implements
 	private CheckBox checkbox_scan_show_logs;
 	private TextView textView_map_info;
 
-	/**
-	 * Connection to Wi-Fi sniffer
-	 * 
-	 * protected ServiceConnection connection = new ServiceConnection() {
-	 * 
-	 * public void onServiceConnected(ComponentName className, IBinder binder) {
-	 * mService = ((WifiSnifferService.ServiceBinder) binder).getService();
-	 * mService.setDelegate(MapViewActivity.this); mService.mResults = new
-	 * Vector<WifiScanResult>();
-	 * 
-	 * mAdapter.setData(mService == null ? null : mService.mResults);
-	 * mAdapter.setTryCount(mService == null ? 0 : mService.mCount);
-	 * 
-	 * }
-	 * 
-	 * public void onServiceDisconnected(ComponentName className) {
-	 * mService.stopScan(); mService.unregisterReceiver(mService.getOnScan());
-	 * mService = null; } };
-	 */
+	// used for scanning notification banner
+	private static final Style STYLE_INFINITE = new Style.Builder()
+			.setBackgroundColorValue(Style.holoBlueLight).build();
+	private static final Configuration CONFIGURATION_INFINITE = new Configuration.Builder()
+			.setDuration(Configuration.DURATION_INFINITE).build();
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -213,6 +228,8 @@ public class MapViewActivity extends Activity implements
 				map_info = null;
 			} else {
 				map_info = mBundle.getString("MAP_INFO");
+				building_ID = mBundle.getInt("buildingID");
+				image_ID = mBundle.getInt("imageID");
 			}
 		} else {
 			map_info = (String) savedInstanceState.getSerializable("MAP_INFO");
@@ -261,6 +278,7 @@ public class MapViewActivity extends Activity implements
 									public void onClick(DialogInterface dialog,
 											int which) {
 										// if start scan
+										initTicker();
 										startScan();
 										mapView.setPointChangable(false);
 										button_scan_stop.setEnabled(true);
@@ -268,6 +286,7 @@ public class MapViewActivity extends Activity implements
 										Toast.makeText(getApplicationContext(),
 												"Scan started!",
 												Toast.LENGTH_SHORT).show();
+
 									}
 								})
 						.setNegativeButton("NO",
@@ -293,6 +312,7 @@ public class MapViewActivity extends Activity implements
 			if (paintMap != null && mapView.getPoints().size() == 2) {
 				// mapView.stopPaint();
 				stopScan();
+				stopTicker();
 				AlertDialog.Builder alertDialog = new AlertDialog.Builder(this);
 				alertDialog
 						.setTitle("Stop Scan")
@@ -784,13 +804,6 @@ public class MapViewActivity extends Activity implements
 		// mBtnSubmitScan.setEnabled(b);
 	}
 
-	/*
-	 * public WifiSearcherAdapter getAdapter() { return mAdapter; }
-	 */
-
-	public void loadSummary() {
-	}
-
 	/**
 	 * Summary Info
 	 * 
@@ -876,6 +889,7 @@ public class MapViewActivity extends Activity implements
 					// mService.startScan();
 					mManager.startScans();
 					mFlagScan = true;
+
 				}
 			};
 
@@ -894,6 +908,8 @@ public class MapViewActivity extends Activity implements
 			} else {
 				startScan.run();
 			}
+			// show banner
+			showCrouton("Scanning...", STYLE_INFINITE, CONFIGURATION_INFINITE);
 		}
 	}
 
@@ -905,10 +921,46 @@ public class MapViewActivity extends Activity implements
 		// mService.pauseScan();
 		mManager.finishScans();
 		mManager.stopScans();
+		// clear banner
+		Crouton.clearCroutonsForActivity(this);
+
+		Vector<WifiData> collection = mManager.getWifiData();
+		Vector<WifiScanResult> stat = new Vector<WifiScanResult>();
+		// Log.d("collected data ", collection.get(0).toJSONArray().toString());
+		int counter = 0;
+		Log.d("size", Integer.toString(collection.size()));
+		for (int i = 0; i < collection.size(); i++) {
+			LogWriter.instance().addLog(collection.get(i).toXMLLog());
+			counter += collection.get(i).getNetworkCount();
+			stat.addAll(collection.get(i).getScanResults());
+		}
+		LogWriter.instance().closeLog();
+		LogWriter.instance().addScanParams(mTimeElapsed.get(), counter);
+		LogWriter.instance().addScanStatistics(stat, counter);
+		LogWriter.instance().addLocation(getLocationManager().getLatitude(),
+				getLocationManager().getLongtitude());
+		LogWriter.instance().addDeviceInfo(this);
+
+		LogWriter.instance().addCustomerId(
+				PreferenceManager.getDefaultSharedPreferences(getBaseContext())
+						.getString(PREF_CUSTOMER_ID, ""));
+		LogWriter.instance().addDeveloperId(
+				PreferenceManager.getDefaultSharedPreferences(getBaseContext())
+						.getString(PREF_DEVELOPER_ID, ""));
+
+		// TODO:
+		// LogWriter.instance().addCellTowersInfo(WifiSnifferService.this);
+
+		// get the IDs, start and end points
+		if (!(image_ID == -1 && building_ID == -1))
+			LogWriter.instance().addImage(image_ID, building_ID,
+					mapView.getPoints().get(1), mapView.getPoints().get(2));
+		LogWriter.instance().endLog();
+		LogWriterSensors.instance().endLog();
 
 		// Toast.makeText(this, R.string.msg_map_notification_points, 3000);
 
-		enableButtonsAfterScan(true);
+		// enableButtonsAfterScan(true);
 
 		if ((mConnectionMobileEnabled || mConnectionWifiEnabled)
 				&& (mConManager.getActiveNetworkInfo() == null || !mConManager
@@ -1039,6 +1091,58 @@ public class MapViewActivity extends Activity implements
 				.append(getString(R.string.check_save_2));
 		return stringBuilder.toString();
 
+	}
+
+	/**
+	 * define the crouton banner behavior
+	 * 
+	 * @param croutonText
+	 * @param croutonStyle
+	 * @param configuration
+	 */
+	private void showCrouton(String croutonText, Style croutonStyle,
+			Configuration configuration) {
+		final boolean infinite = STYLE_INFINITE == croutonStyle;
+		final Crouton crouton;
+		crouton = Crouton.makeText(this, croutonText, croutonStyle);
+		crouton.setOnClickListener(this)
+				.setConfiguration(
+						infinite ? CONFIGURATION_INFINITE : configuration)
+				.show();
+	}
+
+	/**
+	 * get location manager
+	 * 
+	 * @return
+	 */
+	private AppLocationManager getLocationManager() {
+		return AppLocationManager.getInstance(this);
+	}
+
+	/**
+	 * Inits time countings
+	 */
+	private void initTicker() {
+		mTimeTicker = new Timer("Ticker");
+
+		mTimeTicker.scheduleAtFixedRate(new TimerTask() {
+			public void run() {
+				runOnUiThread(new Runnable() {
+					@Override
+					public void run() {
+						mTimeElapsed.incrementAndGet();
+					}
+				});
+			}
+		}, 0, 1000);
+	}
+
+	/**
+	 * dismiss ticker
+	 */
+	private void stopTicker() {
+		mTimeTicker.cancel();
 	}
 
 	@Override

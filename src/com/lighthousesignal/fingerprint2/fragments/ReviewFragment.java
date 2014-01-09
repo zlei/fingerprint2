@@ -8,7 +8,9 @@ import java.util.Collections;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.text.InputType;
 import android.util.SparseBooleanArray;
@@ -27,7 +29,10 @@ import android.widget.Spinner;
 import android.widget.Toast;
 
 import com.lighthousesignal.fingerprint2.R;
+import com.lighthousesignal.fingerprint2.activities.MainActivity;
 import com.lighthousesignal.fingerprint2.logs.LogWriter;
+import com.lighthousesignal.fingerprint2.network.HttpLogSender;
+import com.lighthousesignal.fingerprint2.utilities.DataPersistence;
 import com.lighthousesignal.fingerprint2.utilities.UiFactories;
 
 public class ReviewFragment extends Fragment {
@@ -234,11 +239,15 @@ public class ReviewFragment extends Fragment {
 						// send to server
 						case 0:
 							mSFileList.addAll(filename);
-							updateLogFilter(spn_log_filter
-									.getSelectedItemPosition());
-							Toast.makeText(mContext,
-									"Log file sent to server!",
-									Toast.LENGTH_SHORT).show();
+							if (sendToServer()) {
+								updateLogFilter(spn_log_filter
+										.getSelectedItemPosition());
+								Toast.makeText(mContext,
+										"Log file sent to server!",
+										Toast.LENGTH_SHORT).show();
+							} else
+								Toast.makeText(mContext, "Sent Failed!",
+										Toast.LENGTH_SHORT).show();
 							break;
 						// send by email
 						case 1:
@@ -288,11 +297,17 @@ public class ReviewFragment extends Fragment {
 	 */
 	private boolean updateLogfileList() {
 		String filePath = LogWriter.APPEND_PATH;
+		String filename = "";
 		File file = new File(filePath);
 		File[] files = file.listFiles();
 		mFileList = new ArrayList<String>();
 		for (File mCurrentFile : files) {
-			mFileList.add(mCurrentFile.getName());
+			filename = mCurrentFile.getName();
+			if (filename.contains(".log")) {
+				String[] name = filename.split("\\.");
+				//only input name of files
+				mFileList.add(name[0]);
+			}
 		}
 		return true;
 	}
@@ -373,15 +388,13 @@ public class ReviewFragment extends Fragment {
 		}
 		if (isMultiple) {
 			mAdapter = new ArrayAdapter<String>(mContext,
-					R.drawable.custom_multiple_selection,
-					mFileList);
+					R.drawable.custom_multiple_selection, mFileList);
 			listView_filelist.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE);
 		} else {
 			mAdapter = new ArrayAdapter<String>(mContext,
 					android.R.layout.simple_list_item_1, mFileList);
 
 		}
-
 		listView_filelist.setAdapter(mAdapter);
 		return true;
 	}
@@ -412,8 +425,8 @@ public class ReviewFragment extends Fragment {
 	 * @return
 	 */
 	private boolean initSpn() {
-		sortOrderList.add("Ascending");
 		sortOrderList.add("Descending");
+		sortOrderList.add("Ascending");
 		sortTypeList.add("Name");
 		logFilterList.add("All files");
 		logFilterList.add("Not sent to server");
@@ -455,6 +468,23 @@ public class ReviewFragment extends Fragment {
 
 		return true;
 
+	}
+
+	/**
+	 * send selected file to server
+	 * 
+	 * @return
+	 */
+	private boolean sendToServer() {
+		String token = DataPersistence.getToken(mContext);
+		if (mSFileList.size() > 0) {
+			new HttpLogSender(mContext, DataPersistence.getServerName(mContext
+					.getApplicationContext())
+					+ getString(R.string.submit_log_url), mSFileList).setToken(
+					token).execute();
+			return true;
+		}
+		return false;
 	}
 
 	/**

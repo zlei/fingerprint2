@@ -99,8 +99,9 @@ public class MapView extends ImageViewTouch implements OnTouchListener,
 		return true;
 	}
 
-	class Point {
-		float x, y;
+	//not a good idea ... visible for all
+	public class Point {
+		public float x, y;
 	}
 
 	/**

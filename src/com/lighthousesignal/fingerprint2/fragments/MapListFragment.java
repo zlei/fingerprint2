@@ -50,7 +50,8 @@ public class MapListFragment extends Fragment implements
 	boolean firstrun;
 	private SharedPreferences mPrefs;
 	private Context mContext;
-
+	private BuildingData buildingData;
+	private MapData mapData;
 	public static final String TAG_KEY = "TAG_KEY";
 	public static final String LOG_TAG = "FINGERPRINT2";
 	public static final String PREF_IMG_URL = "";
@@ -99,6 +100,8 @@ public class MapListFragment extends Fragment implements
 				Intent intent = new Intent(mContext, MapViewActivity.class);
 				final String map_info = getBuildingInfo();
 				intent.putExtra("MAP_INFO", map_info);
+				intent.putExtra("imageID", mapData.imageId);
+				intent.putExtra("buildingID", buildingData.building_id);
 				// change to startactivityforresult later
 				startActivity(intent);
 			}
@@ -308,10 +311,9 @@ public class MapListFragment extends Fragment implements
 												+ " ; attribute "
 												+ parser.getAttributeValue(
 														null, "building_id"));
-								BuildingData buildingData = new BuildingData();
+								buildingData = new BuildingData();
 								buildingData.name = parser.getAttributeValue(
 										null, "name");
-
 								buildingData.building_id = Integer
 										.parseInt(parser.getAttributeValue(
 												null, "building_id"));
@@ -333,7 +335,6 @@ public class MapListFragment extends Fragment implements
 				parser.nextTag();
 				if (XmlPullParser.START_TAG == parser.getEventType())
 					if (parser.getName().equalsIgnoreCase("images")) {
-						MapData mapData = null;
 						while (parser.next() != XmlPullParser.END_DOCUMENT) {
 							if (parser.getEventType() == XmlPullParser.START_TAG
 									&& parser.getName()

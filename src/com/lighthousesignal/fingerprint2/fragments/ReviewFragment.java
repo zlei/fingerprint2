@@ -8,7 +8,9 @@ import java.util.Collections;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.SharedPreferences;
+import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
@@ -97,6 +99,7 @@ public class ReviewFragment extends Fragment {
 								View view, int position, long id) {
 							String filename = listView_filelist
 									.getItemAtPosition(position).toString();
+							// for now, just open log file, no dev file
 							setReviewFileOptions(filename);
 							/*
 							 * try { UiFactories.standardAlertDialog(mContext,
@@ -135,6 +138,7 @@ public class ReviewFragment extends Fragment {
 	 */
 	private boolean setReviewFileOptions(String logfile) {
 		final String filename = logfile;
+		final String loadFilename = filename + ".log";
 		AlertDialog.Builder builderSingle = new AlertDialog.Builder(mContext);
 		builderSingle.setIcon(R.drawable.ic_launcher);
 		builderSingle.setTitle("Select One: ");
@@ -165,7 +169,7 @@ public class ReviewFragment extends Fragment {
 						case 0:
 							try {
 								UiFactories.standardAlertDialog(mContext,
-										filename, getLogText(filename), null);
+										loadFilename, getLogText(loadFilename), null);
 							} catch (Exception e) {
 								e.printStackTrace();
 							}
@@ -176,28 +180,29 @@ public class ReviewFragment extends Fragment {
 							break;
 						// send to server
 						case 2:
-							mSFileList.add(filename);
-							updateLogFilter(spn_log_filter
-									.getSelectedItemPosition());
-							Toast.makeText(mContext,
-									"Log file sent to server!",
-									Toast.LENGTH_SHORT).show();
+							if (!mSFileList.contains(filename)) {
+								mSFileList.add(filename);
+								sendToServer();
+								updateLogFilter(spn_log_filter
+										.getSelectedItemPosition());
+							}
 							break;
 						// send by email
 						case 3:
-							mEFileList.add(filename);
-							updateLogFilter(spn_log_filter
-									.getSelectedItemPosition());
-							Toast.makeText(mContext, "Log file sent by email!",
-									Toast.LENGTH_SHORT).show();
+							if (!mEFileList.contains(filename)) {
+								mEFileList.add(filename);
+								sendByEmail();
+								updateLogFilter(spn_log_filter
+										.getSelectedItemPosition());
+							}
 							break;
 						// rename selected file
 						case 4:
-							renameSelectedFile(filename);
+							renameSelectedFile(loadFilename);
 							break;
 						// delete selected file
 						case 5:
-							deleteSelectedFile(filename);
+							deleteSelectedFile(loadFilename);
 							break;
 						}
 					}
@@ -238,24 +243,26 @@ public class ReviewFragment extends Fragment {
 						switch (which) {
 						// send to server
 						case 0:
-							mSFileList.addAll(filename);
-							if (sendToServer()) {
-								updateLogFilter(spn_log_filter
-										.getSelectedItemPosition());
-								Toast.makeText(mContext,
-										"Log file sent to server!",
-										Toast.LENGTH_SHORT).show();
-							} else
-								Toast.makeText(mContext, "Sent Failed!",
-										Toast.LENGTH_SHORT).show();
+							for (int i = 0; i < filename.size(); i++) {
+								if (!mSFileList.contains(filename.get(i)))
+									mSFileList.add(filename.get(i));
+							}
+							sendToServer();
+							updateLogFilter(spn_log_filter
+									.getSelectedItemPosition());
 							break;
 						// send by email
 						case 1:
-							mEFileList.addAll(filename);
-							updateLogFilter(spn_log_filter
-									.getSelectedItemPosition());
-							Toast.makeText(mContext, "Log file sent by email!",
-									Toast.LENGTH_SHORT).show();
+							for (int i = 0; i < filename.size(); i++) {
+								if (!mEFileList.contains(filename.get(i)))
+									mEFileList.add(filename.get(i));
+							}
+							if (sendByEmail()) {
+								updateLogFilter(spn_log_filter
+										.getSelectedItemPosition());
+							} else
+								Toast.makeText(mContext, "Sent Failed!",
+										Toast.LENGTH_SHORT).show();
 							break;
 						}
 					}
@@ -305,7 +312,7 @@ public class ReviewFragment extends Fragment {
 			filename = mCurrentFile.getName();
 			if (filename.contains(".log")) {
 				String[] name = filename.split("\\.");
-				//only input name of files
+				// only input name of files
 				mFileList.add(name[0]);
 			}
 		}
@@ -472,19 +479,52 @@ public class ReviewFragment extends Fragment {
 
 	/**
 	 * send selected file to server
-	 * 
+	 * TODO save send logs status permanently  
 	 * @return
 	 */
 	private boolean sendToServer() {
 		String token = DataPersistence.getToken(mContext);
 		if (mSFileList.size() > 0) {
-			new HttpLogSender(mContext, DataPersistence.getServerName(mContext
-					.getApplicationContext())
+			new HttpLogSender(mContext, DataPersistence.getServerName(mContext)
 					+ getString(R.string.submit_log_url), mSFileList).setToken(
 					token).execute();
 			return true;
 		}
 		return false;
+	}
+
+	/**
+	 * Email
+	 **/
+	private boolean sendByEmail() {
+		// convert from paths to Android friendly
+		// Parcelable Uri's
+		ArrayList<Uri> uris = new ArrayList<Uri>();
+		for (int i = 0; i < mEFileList.size(); i++) {
+			/** wifi **/
+			File fileIn = new File(LogWriter.APPEND_PATH + mEFileList.get(i)
+					+ ".log");
+			Uri u = Uri.fromFile(fileIn);
+			uris.add(u);
+
+			/** sensors **/
+			File fileInSensors = new File(LogWriter.APPEND_PATH
+					+ mEFileList.get(i) + ".dev");
+			Uri uSens = Uri.fromFile(fileInSensors);
+			uris.add(uSens);
+		}
+
+		/**
+		 * Run sending email activity
+		 */
+		Intent emailIntent = new Intent(
+				android.content.Intent.ACTION_SEND_MULTIPLE);
+		emailIntent.setType("plain/text");
+		emailIntent.putExtra(android.content.Intent.EXTRA_SUBJECT,
+				"Wifi Searcher Scan Log");
+		emailIntent.putParcelableArrayListExtra(Intent.EXTRA_STREAM, uris);
+		startActivity(Intent.createChooser(emailIntent, "Send mail..."));
+		return true;
 	}
 
 	/**
@@ -494,6 +534,8 @@ public class ReviewFragment extends Fragment {
 	 * @return
 	 */
 	private boolean renameSelectedFile(String logname) {
+		String[] filename = logname.split("\\.");
+		logname = filename[0];
 		final String oldFilename = LogWriter.APPEND_PATH + logname;
 		final EditText editText = new EditText(mContext);
 		editText.setInputType(InputType.TYPE_CLASS_TEXT);
@@ -506,9 +548,12 @@ public class ReviewFragment extends Fragment {
 					public void onClick(DialogInterface dialog, int which) {
 						String newFilename = LogWriter.APPEND_PATH
 								+ editText.getText().toString();
-						File oldName = new File(oldFilename);
-						File newName = new File(newFilename);
-						oldName.renameTo(newName);
+						File oldLogName = new File(oldFilename + ".log");
+						File newLogName = new File(newFilename + ".log");
+						File oldDevName = new File(oldFilename + ".dev");
+						File newDevName = new File(newFilename + ".dev");
+						oldLogName.renameTo(newLogName);
+						oldDevName.renameTo(newDevName);
 						updateLogFilter(spn_log_filter
 								.getSelectedItemPosition());
 					}
@@ -543,7 +588,11 @@ public class ReviewFragment extends Fragment {
 							public void onClick(DialogInterface dialog,
 									int which) {
 								File file = new File(filename);
+								String devFilename = filename.replace(".log",
+										".dev");
+								File devFile = new File(devFilename);
 								file.delete();
+								devFile.delete();
 								updateLogFilter(spn_log_filter
 										.getSelectedItemPosition());
 							}

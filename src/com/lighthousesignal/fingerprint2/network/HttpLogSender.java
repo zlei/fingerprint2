@@ -106,21 +106,21 @@ public class HttpLogSender extends AsyncTask<Void, Integer, Long> {
 				HttpPost httppost = new HttpPost(mUrl);
 
 				String filename = file.substring(file.lastIndexOf("/") + 1);
-
-				filename = LogWriter.APPEND_PATH + filename + ".log";
+				
+				String loadFilename = LogWriter.APPEND_PATH + filename + ".log";
 				// filename = filename.equals(LogWriter.DEFAULT_NAME) ?
 				// LogWriter
 				// .generateFilename() : filename.replace(".log", "");
 				List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>(
 						2);
 				nameValuePairs.add(new BasicNameValuePair("logdata", LogWriter
-						.readFile(filename)));
+						.readFile(loadFilename)));
 				nameValuePairs
 						.add(new BasicNameValuePair("scanname", filename));
 				if (mToken != null)
 					nameValuePairs.add(new BasicNameValuePair("token", mToken));
 				nameValuePairs.add(new BasicNameValuePair("device_log",
-						LogWriter.readFile(filename.replace(".log", ".dev"))));
+						LogWriter.readFile(loadFilename.replace(".log", ".dev"))));
 				httppost.setEntity(new UrlEncodedFormEntity(nameValuePairs,
 						"UTF-8"));
 
@@ -212,8 +212,8 @@ public class HttpLogSender extends AsyncTask<Void, Integer, Long> {
 				// }
 				UiFactories
 						.standardAlertDialog(mContext, mContext
-								.getString(R.string.msg_alert), mContext
-								.getString(R.string.msg_alert_connection), null);
+								.getString(R.string.msg_success), mContext
+								.getString(R.string.msg_success_network), null);
 			} else
 				UiFactories.standardAlertDialog(mContext,
 						mContext.getString(R.string.msg_error),

@@ -3,8 +3,10 @@ package com.lighthousesignal.fingerprint2.activities;
 import java.util.List;
 import java.util.Vector;
 
+import android.R.color;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
@@ -106,9 +108,10 @@ public class MainActivity extends SherlockFragmentActivity {
 		case R.id.action_logout:
 			Intent i_login = new Intent(this, LoginActivity.class);
 			mPrefs = PreferenceManager.getDefaultSharedPreferences(this);
-			/*if (mPrefs.contains(PREF_LOGIN_TOKEN)) {
-				mPrefs.edit().remove(PREF_LOGIN_TOKEN).commit();
-			}*/
+			/*
+			 * if (mPrefs.contains(PREF_LOGIN_TOKEN)) {
+			 * mPrefs.edit().remove(PREF_LOGIN_TOKEN).commit(); }
+			 */
 			startActivity(i_login);
 			finish();
 			break;

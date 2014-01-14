@@ -295,6 +295,7 @@ public class LoginActivity extends BasicActivity implements
 				editor.putString(PREF_CUSTOMER_ID, mCustomerID);
 				editor.putString(PREF_DEVELOPER_ID, mDeveloperID);
 				editor.commit();
+				DataPersistence.setToken(this, loginToken);
 				DataPersistence.setServerName(this, mServer);
 				Intent intent = new Intent(LoginActivity.this,
 						MainActivity.class);

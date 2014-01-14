@@ -30,6 +30,11 @@ import com.lighthousesignal.fingerprint2.logs.LogWriterSensors;
 public class UiFactories {
 
 	/**
+	 * to determine current file is saved or not
+	 */
+	private static boolean isSaved;
+
+	/**
 	 * Standard Confirm Dialog
 	 * 
 	 * @param title
@@ -91,6 +96,7 @@ public class UiFactories {
 		final Spinner segmode = new Spinner(context);
 		final EditText nameinput = new EditText(context);
 
+		isSaved = false;
 		List<String> items = new ArrayList<String>();
 		items.add("orig");
 		items.add("mod");
@@ -171,6 +177,7 @@ public class UiFactories {
 
 						LogWriter.instance().saveLog(value + ".log");
 						LogWriterSensors.instance().saveLog(value + ".dev");
+						isSaved = true;
 						dialog.dismiss();
 						Toast.makeText(activity.getApplicationContext(),
 								"Data saved!", Toast.LENGTH_SHORT).show();
@@ -211,5 +218,9 @@ public class UiFactories {
 			sb.append(line).append("\n");
 		}
 		return sb.toString();
+	}
+
+	public static boolean isSaved() {
+		return isSaved;
 	}
 }

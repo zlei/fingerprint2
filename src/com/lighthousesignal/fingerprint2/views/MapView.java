@@ -5,6 +5,7 @@ import it.sephiroth.android.library.imagezoom.ImageViewTouch;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import android.R.color;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.res.Resources;
@@ -99,7 +100,7 @@ public class MapView extends ImageViewTouch implements OnTouchListener,
 		return true;
 	}
 
-	//not a good idea ... visible for all
+	// not a good idea ... visible for all
 	public class Point {
 		public float x, y;
 	}
@@ -201,7 +202,6 @@ public class MapView extends ImageViewTouch implements OnTouchListener,
 	 * draw point on painted map
 	 */
 	public boolean drawPoint() {
-		paint.setColor(Color.RED);
 		// canvas.drawCircle(scaledPoint.x, scaledPoint.y, 4, paint);
 		// canvas.drawCircle(realPoint.x, realPoint.y, 4, paint);
 		canvas.drawBitmap(startPoint, scaledPoint.x, scaledPoint.y, paint);
@@ -322,7 +322,8 @@ public class MapView extends ImageViewTouch implements OnTouchListener,
 			Paint linePaint = new Paint();
 			linePaint.setStyle(Style.STROKE);
 			linePaint.setStrokeWidth(2);
-			linePaint.setColor(Color.BLUE);
+			// holo blue light, same as scanning bar
+			linePaint.setColor(0xff33b5e5);
 			float x1 = points.get(pointCounter - 1).x + 2;
 			float y1 = points.get(pointCounter - 1).y + 2;
 			float x2 = points.get(pointCounter).x + 2;

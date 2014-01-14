@@ -17,12 +17,14 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserFactory;
 
+import android.R.color;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
+import android.graphics.Color;
 import android.hardware.GeomagneticField;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
@@ -215,10 +217,10 @@ public class MapViewActivity extends Activity implements
 
 		mWifiManager = (WifiManager) getSystemService(Context.WIFI_SERVICE);
 
-		button_scan_start = (Button) findViewById(R.id.button_scan_start);
-		button_scan_stop = (Button) findViewById(R.id.button_scan_stop);
-		button_scan_clear = (Button) findViewById(R.id.button_scan_clear);
-		button_scan_save = (Button) findViewById(R.id.button_scan_save);
+		button_scan_start = (Button) findViewById(R.id.button_scanStart);
+		button_scan_stop = (Button) findViewById(R.id.button_scanStop);
+		button_scan_clear = (Button) findViewById(R.id.button_scanClear);
+		button_scan_save = (Button) findViewById(R.id.button_scanSave);
 		checkbox_scan_show_logs = (CheckBox) findViewById(R.id.checkBox_scan_show_logs);
 		textView_map_info = (TextView) findViewById(R.id.map_info);
 
@@ -262,43 +264,14 @@ public class MapViewActivity extends Activity implements
 
 	@Override
 	public void onClick(View v) {
-		// TODO Auto-generated method stub
 		int id = v.getId();
 		switch (id) {
-		case R.id.button_scan_start:
+		case R.id.button_scanStart:
 			if (rawMap != null && mapView.getPoints().size() == 1) {
 				// mapView.setBitmap(rawMap);
 				// mapView.startPaint(paintMap);
 				// only start point
-				AlertDialog.Builder alertDialog = new AlertDialog.Builder(this);
-				alertDialog
-						.setTitle("Start Scan")
-						.setPositiveButton("YES",
-								new DialogInterface.OnClickListener() {
-									public void onClick(DialogInterface dialog,
-											int which) {
-										// if start scan
-										initTicker();
-										startScan();
-										mapView.setPointChangable(false);
-										button_scan_stop.setEnabled(true);
-										button_scan_start.setEnabled(false);
-										Toast.makeText(getApplicationContext(),
-												"Scan started!",
-												Toast.LENGTH_SHORT).show();
-
-									}
-								})
-						.setNegativeButton("NO",
-								new DialogInterface.OnClickListener() {
-									public void onClick(DialogInterface dialog,
-											int which) {
-										Toast.makeText(getApplicationContext(),
-												"Scan canceled!",
-												Toast.LENGTH_SHORT).show();
-									}
-								}).setCancelable(true)
-						.setMessage("make sure to start scan?").show();
+				initStart();
 			} else {
 				UiFactories.standardAlertDialog(this, "Alert",
 						"Please have start point first!", null);
@@ -307,66 +280,23 @@ public class MapViewActivity extends Activity implements
 			// mapView.setImageBitmap(rawMap);
 			break;
 
-		case R.id.button_scan_stop:
+		case R.id.button_scanStop:
 			// exactly two points
 			if (paintMap != null && mapView.getPoints().size() == 2) {
-				// mapView.stopPaint();
-				stopScan();
-				stopTicker();
-				AlertDialog.Builder alertDialog = new AlertDialog.Builder(this);
-				alertDialog
-						.setTitle("Stop Scan")
-						.setPositiveButton("YES",
-								new DialogInterface.OnClickListener() {
-									public void onClick(DialogInterface dialog,
-											int which) {
-										saveScan();
-										button_scan_save.setEnabled(true);
-										Toast.makeText(
-												getApplicationContext(),
-												"Scan successed! Please save the scan",
-												Toast.LENGTH_SHORT).show();
-									}
-								})
-						.setNegativeButton("NO",
-								new DialogInterface.OnClickListener() {
-									public void onClick(DialogInterface dialog,
-											int which) {
-										mapView.setPointChangable(true);
-										button_scan_save.setEnabled(true);
-										Toast.makeText(
-												getApplicationContext(),
-												"Please click on another point! Then save the scan data.",
-												Toast.LENGTH_SHORT).show();
-									}
-								}).setCancelable(true)
-						.setMessage("Is end point correct?").show();
-				// mapView.clearData();
-				// mapView.startPaint(paintMap);
-				button_scan_stop.setEnabled(false);
+				initStop();
 			} else {
 				UiFactories.standardAlertDialog(this, "Alert",
 						"Please have end point first!", null);
 			}
 			break;
 
-		case R.id.button_scan_save:
-			saveScan();
+		case R.id.button_scanSave:
+			initSave();
 			break;
 
-		case R.id.button_scan_clear:
+		case R.id.button_scanClear:
 			// downloadMap(reloadMap);
-			// restart all
-			paintMap = rawMap.copy(rawMap.getConfig(), true);
-			mapView.clearData();
-			mapView.updatePaint(paintMap);
-			mapView.stopPaint();
-			mapView.startPaint(paintMap);
-			// default status for one point
-			mapView.setPointChangable(true);
-			button_scan_stop.setEnabled(false);
-			button_scan_save.setEnabled(false);
-			button_scan_start.setEnabled(true);
+			initClear();
 			break;
 		}
 	}
@@ -759,7 +689,7 @@ public class MapViewActivity extends Activity implements
 		 * Button controls states
 		 */
 		// mBtnStartScan.setEnabled(true);
-		enableButtonsAfterScan(false);
+		// enableButtonsAfterScan(false);
 
 		// mAdapter.reset();
 		mManager.reset();
@@ -874,6 +804,141 @@ public class MapViewActivity extends Activity implements
 	}
 
 	/**
+	 * initial all needed for start
+	 * 
+	 * @return
+	 */
+	private boolean initStart() {
+		AlertDialog.Builder alertDialog = new AlertDialog.Builder(this);
+		alertDialog
+				.setTitle("Start Scan")
+				.setPositiveButton("YES",
+						new DialogInterface.OnClickListener() {
+							public void onClick(DialogInterface dialog,
+									int which) {
+								// if start scan
+								initTicker();
+								startScan();
+								mapView.setPointChangable(false);
+								button_scan_start.setVisibility(View.GONE);
+								button_scan_stop.setVisibility(View.VISIBLE);
+								Toast.makeText(getApplicationContext(),
+										"Scan started!", Toast.LENGTH_SHORT)
+										.show();
+							}
+						})
+				.setNegativeButton("NO", new DialogInterface.OnClickListener() {
+					public void onClick(DialogInterface dialog, int which) {
+						Toast.makeText(getApplicationContext(),
+								"Scan canceled!", Toast.LENGTH_SHORT).show();
+					}
+				}).setCancelable(true).setMessage("make sure to start scan?")
+				.show();
+		return true;
+	}
+
+	/**
+	 * initial all settings for stop
+	 * 
+	 * @return
+	 */
+	private boolean initStop() {
+		stopScan();
+		stopTicker();
+		button_scan_stop.setVisibility(View.GONE);
+		button_scan_save.setVisibility(View.VISIBLE);
+		AlertDialog.Builder alertDialog = new AlertDialog.Builder(this);
+		alertDialog
+				.setTitle("Stop Scan")
+				.setPositiveButton("YES",
+						new DialogInterface.OnClickListener() {
+							public void onClick(DialogInterface dialog,
+									int which) {
+								initSave();
+								Toast.makeText(
+										MapViewActivity.this,
+										"Scan successed! Please save the scan.",
+										Toast.LENGTH_SHORT).show();
+							}
+						})
+				.setNegativeButton("NO", new DialogInterface.OnClickListener() {
+					public void onClick(DialogInterface dialog, int which) {
+						mapView.setPointChangable(true);
+						button_scan_save.setEnabled(true);
+						Toast.makeText(
+								MapViewActivity.this,
+								"Please click on another point! Then save the scan data.",
+								Toast.LENGTH_SHORT).show();
+					}
+				}).setCancelable(true).setMessage("Is end point correct?")
+				.show();
+		// mapView.clearData();
+		// mapView.startPaint(paintMap);
+		return true;
+	}
+
+	private boolean initSave() {
+		saveScan();
+		return true;
+	}
+
+	/**
+	 * init all for clear button
+	 * 
+	 * @return
+	 */
+	private boolean initClear() {
+		AlertDialog.Builder alertDialog = new AlertDialog.Builder(this);
+		alertDialog
+				.setTitle("Clear Scan")
+				.setPositiveButton("YES",
+						new DialogInterface.OnClickListener() {
+							public void onClick(DialogInterface dialog,
+									int which) {
+								initRestart();
+								Toast.makeText(getApplicationContext(),
+										"Data cleared! Ready for new scan!",
+										Toast.LENGTH_LONG).show();
+							}
+						})
+				.setNegativeButton("NO", new DialogInterface.OnClickListener() {
+					public void onClick(DialogInterface dialog, int which) {
+						Toast.makeText(getApplicationContext(),
+								"Clear canceled!", Toast.LENGTH_SHORT).show();
+					}
+				})
+				.setCancelable(true)
+				.setMessage(
+						"Do you really want to clear data? All unsaved data would be lost!")
+				.show();
+		return true;
+	}
+
+	/**
+	 * restart all
+	 * 
+	 * @return
+	 */
+	private boolean initRestart() {
+		// restart all
+		paintMap = rawMap.copy(rawMap.getConfig(), true);
+		if (!mapView.getPoints().isEmpty())
+			mapView.clearData();
+		if (mManager.serviceRunning())
+			clearScan();
+		Crouton.clearCroutonsForActivity(MapViewActivity.this);
+		mapView.updatePaint(paintMap);
+		mapView.stopPaint();
+		mapView.startPaint(paintMap);
+		// default status for one point
+		mapView.setPointChangable(true);
+		button_scan_save.setVisibility(View.GONE);
+		button_scan_start.setVisibility(View.VISIBLE);
+
+		return true;
+	}
+
+	/**
 	 * Starts scan
 	 */
 	protected void startScan() {
@@ -973,7 +1038,24 @@ public class MapViewActivity extends Activity implements
 	 * Save scan data into log file
 	 */
 	public void saveScan() {
-		UiFactories.saveScanDailog("Save Data", this, null, this).show();
+		AlertDialog saveDialog = UiFactories.saveScanDailog("Save Data", this,
+				null, this);
+		saveDialog.show();
+		saveDialog
+				.setOnDismissListener(new DialogInterface.OnDismissListener() {
+					@Override
+					public void onDismiss(DialogInterface dialog) {
+						if (UiFactories.isSaved()) {
+							initRestart();
+							Toast.makeText(MapViewActivity.this,
+									"Ready for new scan!", Toast.LENGTH_LONG)
+									.show();
+						} else
+							Toast.makeText(MapViewActivity.this,
+									"Please save current scan data!",
+									Toast.LENGTH_LONG).show();
+					}
+				});
 	}
 
 	/**

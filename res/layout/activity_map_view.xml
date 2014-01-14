@@ -15,7 +15,7 @@
         android:scaleType="fitXY" />
 
     <Button
-        android:id="@+id/button_scan_clear"
+        android:id="@+id/button_scanClear"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
@@ -23,38 +23,36 @@
         android:text="@string/scan_clear" />
 
     <Button
-        android:id="@+id/button_scan_save"
+        android:id="@+id/button_scanSave"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignBaseline="@+id/button_scan_clear"
-        android:layout_alignBottom="@+id/button_scan_clear"
-        android:layout_toLeftOf="@+id/button_scan_clear"
-        android:enabled="false"
-        android:text="@string/scan_save" />
+        android:layout_alignBottom="@+id/map_image"
+        android:layout_centerHorizontal="true"
+        android:text="@string/scan_save"
+        android:visibility="gone" />
 
     <Button
-        android:id="@+id/button_scan_stop"
+        android:id="@+id/button_scanStop"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_above="@+id/button_scan_clear"
-        android:layout_alignRight="@+id/button_scan_clear"
-        android:enabled="false"
-        android:text="@string/scan_stop" />
+        android:layout_alignBottom="@+id/map_image"
+        android:layout_centerHorizontal="true"
+        android:text="@string/scan_stop"
+        android:visibility="gone" />
 
     <Button
-        android:id="@+id/button_scan_start"
+        android:id="@+id/button_scanStart"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignBaseline="@+id/button_scan_stop"
-        android:layout_alignBottom="@+id/button_scan_stop"
-        android:layout_toLeftOf="@+id/button_scan_stop"
+        android:layout_alignBottom="@+id/map_image"
+        android:layout_centerHorizontal="true"
         android:text="@string/scan_start" />
 
     <TextView
         android:id="@+id/map_info"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignRight="@+id/button_scan_stop"
+        android:layout_alignRight="@+id/map_image"
         android:text="@string/map_info" />
 
     <CheckBox

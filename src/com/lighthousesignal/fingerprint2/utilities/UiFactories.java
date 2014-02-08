@@ -51,7 +51,7 @@ public class UiFactories {
 		alertDialog.setTitle(title);
 		alertDialog.setPositiveButton("YES", onClickListenerPositive);
 		alertDialog.setNegativeButton("NO", onClickListenerNegative);
-		alertDialog.setCancelable(cancelable);
+		//alertDialog.setCancelable(cancelable);
 		alertDialog.setMessage(message);
 		alertDialog.show();
 
@@ -72,6 +72,7 @@ public class UiFactories {
 		try {
 			AlertDialog alertDialog = new AlertDialog.Builder(context).create();
 			alertDialog.setTitle(title);
+			alertDialog.setCanceledOnTouchOutside(false);
 			alertDialog.setButton("OK", onClickListener);
 			alertDialog.setMessage(message);
 
@@ -142,6 +143,7 @@ public class UiFactories {
 			view.addView(nameinput);
 		}
 
+		alert.setCancelable(false);
 		alert.setView(view);
 		alert.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
 			public void onClick(DialogInterface dialog, int whichButton) {

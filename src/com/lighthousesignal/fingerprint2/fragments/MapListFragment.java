@@ -47,7 +47,7 @@ public class MapListFragment extends Fragment implements
 	private Button button_select_map;
 	private TextView textBuilding, textFloor;
 	private ArrayList mData;
-	boolean firstrun;
+	//boolean firstrun;
 	private SharedPreferences mPrefs;
 	private Context mContext;
 	private BuildingData buildingData;
@@ -91,7 +91,7 @@ public class MapListFragment extends Fragment implements
 		textBuilding = (TextView) v.findViewById(R.id.select_building);
 		spnFloor = (Spinner) v.findViewById(R.id.spinner_floor);
 		textFloor = (TextView) v.findViewById(R.id.select_floor);
-		firstrun = true;
+		//firstrun = true;
 		// addItemsOnSpnState(v);
 		button_select_map = (Button) v.findViewById(R.id.button_select_ok);
 		button_select_map.setOnClickListener(new View.OnClickListener() {
@@ -141,11 +141,12 @@ public class MapListFragment extends Fragment implements
 			textBuilding.setVisibility(View.INVISIBLE);
 			spnFloor.setVisibility(View.INVISIBLE);
 			textFloor.setVisibility(View.INVISIBLE);
-			if (!firstrun) {
-				button_select_map.setEnabled(false);
-				loadBuildings(position);
-			}
-			firstrun = false;
+			//do not need it anymore, "firstrun" used for test
+			//if (!firstrun) {
+			button_select_map.setEnabled(false);
+			loadBuildings(position);
+			//}
+			//firstrun = false;
 		} else if (id == R.id.spinner_building) {
 			String building_id = building_table.get(Integer.toString(position));
 			DataPersistence.setBuildingID(mContext, building_id);

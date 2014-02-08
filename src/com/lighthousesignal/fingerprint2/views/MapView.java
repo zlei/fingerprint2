@@ -40,7 +40,7 @@ public class MapView extends ImageViewTouch implements OnTouchListener,
 	private Point realPoint;
 	private Point scaledPoint;
 	private int pointCounter;
-	protected Bitmap startPoint, stopPoint;
+	protected Bitmap startPoint, logPoint;
 	private HashMap<Integer, Point> points;
 	private ArrayList<Point> serverPoints;
 	private Boolean isPointChangable;
@@ -73,9 +73,9 @@ public class MapView extends ImageViewTouch implements OnTouchListener,
 	@SuppressLint("UseSparseArrays")
 	protected void init() {
 		Resources res = getContext().getResources();
-		startPoint = ((BitmapDrawable) res.getDrawable(R.drawable.arrow_blue))
+		startPoint = ((BitmapDrawable) res.getDrawable(R.drawable.map_marker))
 				.getBitmap();
-		stopPoint = ((BitmapDrawable) res.getDrawable(R.drawable.arrow_red))
+		logPoint = ((BitmapDrawable) res.getDrawable(R.drawable.arrow_blue))
 				.getBitmap();
 		points = new HashMap<Integer, Point>();
 		// 1 for start point, 2 for end point
@@ -204,7 +204,9 @@ public class MapView extends ImageViewTouch implements OnTouchListener,
 	public boolean drawPoint() {
 		// canvas.drawCircle(scaledPoint.x, scaledPoint.y, 4, paint);
 		// canvas.drawCircle(realPoint.x, realPoint.y, 4, paint);
-		canvas.drawBitmap(startPoint, scaledPoint.x, scaledPoint.y, paint);
+		// get used to the size of png
+		canvas.drawBitmap(startPoint, scaledPoint.x - 12, scaledPoint.y - 40,
+				paint);
 		// points.put(pointCounter, realPoint);
 		updatePaint(paintedMap);
 		// this.setOnTouchListener(null);
@@ -239,11 +241,12 @@ public class MapView extends ImageViewTouch implements OnTouchListener,
 	 * 
 	 * @param loadedMap
 	 */
-	public boolean showLogs(Bitmap loadedMap) {
+	public boolean showLogs(Bitmap loadedMap,
+			ArrayList<HashMap<String, String>> points) {
 		showLogsMap = loadedMap;
 		canvas = new Canvas(showLogsMap);
 
-		drawServerPoints();
+		drawServerPoints(points);
 		updatePaint(showLogsMap);
 		return true;
 	}
@@ -253,42 +256,41 @@ public class MapView extends ImageViewTouch implements OnTouchListener,
 	 * 
 	 * @return
 	 */
-	private boolean drawServerPoints() {
-		// load points here
-		serverPoints = new ArrayList<Point>();
-		Point p1 = new Point();
-		p1.x = 500;
-		p1.y = 250;
-		Point p2 = new Point();
-		p2.x = 500;
-		p2.y = 500;
-		Point p3 = new Point();
-		p3.x = 250;
-		p3.y = 500;
-
-		serverPoints.add(p1);
-		serverPoints.add(p2);
-		serverPoints.add(p3);
-
+	private boolean drawServerPoints(ArrayList<HashMap<String, String>> points) {
+		// if serverPoints are not existed
+		if (points != null) {
+			// load points here
+			serverPoints = new ArrayList<Point>();
+			for (HashMap<String, String> data : points) {
+				Point point = new Point();
+				// decide it is used or not
+				if (data.get("is_used").equals("Yes")) {
+					point.x = Float.parseFloat(data.get("point_x"));
+					point.y = Float.parseFloat(data.get("point_y"));
+					serverPoints.add(point);
+				}
+			}
+		}
+		//else, draw points
 		Paint linePaint = new Paint();
 		linePaint.setStyle(Style.STROKE);
 		linePaint.setStrokeWidth(2);
-		linePaint.setColor(Color.BLUE);
+		linePaint.setColor(Color.GREEN);
 
+		// draw lines from points from server
 		Point prePoint = null;
 		for (Point tempPoint : serverPoints) {
-			canvas.drawBitmap(startPoint, tempPoint.x, tempPoint.y, paint);
+			canvas.drawBitmap(logPoint, tempPoint.x, tempPoint.y, paint);
 			if (prePoint != null) {
 				float x1 = prePoint.x + 2;
 				float y1 = prePoint.y + 2;
 				float x2 = tempPoint.x + 2;
 				float y2 = tempPoint.y + 2;
 				canvas.drawLine(x1, y1, x2, y2, linePaint);
+				tempPoint = null;
 			}
 			prePoint = tempPoint;
-			updatePaint(showLogsMap);
 		}
-
 		return true;
 	}
 
@@ -388,4 +390,14 @@ public class MapView extends ImageViewTouch implements OnTouchListener,
 		return true;
 	}
 
+	/**
+	 * to decide the server log points is existed or not
+	 * 
+	 * @return
+	 */
+	public boolean isLogPoints() {
+		if (serverPoints != null)
+			return true;
+		return false;
+	}
 }

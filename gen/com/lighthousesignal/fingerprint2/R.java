@@ -1250,13 +1250,14 @@ containing a value of this type.
         public static final int custom_tab_indicator_unselected_pressed=0x7f02007b;
         public static final int ic_action_search=0x7f02007c;
         public static final int ic_launcher=0x7f02007d;
-        public static final int vpi__tab_indicator=0x7f02007e;
-        public static final int vpi__tab_selected_focused_holo=0x7f02007f;
-        public static final int vpi__tab_selected_holo=0x7f020080;
-        public static final int vpi__tab_selected_pressed_holo=0x7f020081;
-        public static final int vpi__tab_unselected_focused_holo=0x7f020082;
-        public static final int vpi__tab_unselected_holo=0x7f020083;
-        public static final int vpi__tab_unselected_pressed_holo=0x7f020084;
+        public static final int map_marker=0x7f02007e;
+        public static final int vpi__tab_indicator=0x7f02007f;
+        public static final int vpi__tab_selected_focused_holo=0x7f020080;
+        public static final int vpi__tab_selected_holo=0x7f020081;
+        public static final int vpi__tab_selected_pressed_holo=0x7f020082;
+        public static final int vpi__tab_unselected_focused_holo=0x7f020083;
+        public static final int vpi__tab_unselected_holo=0x7f020084;
+        public static final int vpi__tab_unselected_pressed_holo=0x7f020085;
     }
     public static final class id {
         public static final int abs__action_bar=0x7f060025;

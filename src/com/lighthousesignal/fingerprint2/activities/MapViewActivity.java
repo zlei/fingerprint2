@@ -92,8 +92,8 @@ public class MapViewActivity extends Activity implements
 	/**
 	 * building id, image id
 	 */
-	private static int building_ID = -1;
-	private static int image_ID = -1;
+	private int building_ID = -1;
+	private int image_ID = -1;
 
 	/**
 	 * atomic counter
@@ -232,6 +232,8 @@ public class MapViewActivity extends Activity implements
 				map_info = mBundle.getString("MAP_INFO");
 				building_ID = mBundle.getInt("buildingID");
 				image_ID = mBundle.getInt("imageID");
+				// TODO Temporary set to 85
+				// image_ID = 85;
 			}
 		} else {
 			map_info = (String) savedInstanceState.getSerializable("MAP_INFO");
@@ -248,9 +250,12 @@ public class MapViewActivity extends Activity implements
 					@Override
 					public void onCheckedChanged(CompoundButton buttonView,
 							boolean isChecked) {
-						if (isChecked)
-							mapView.showLogs(serverLogMap);
-						else
+						if (isChecked) {
+							if (mapView.isLogPoints())
+								mapView.showLogs(serverLogMap, null);
+							else
+								loadMap();
+						} else
 							mapView.updatePaint(paintMap);
 					}
 				});
@@ -366,14 +371,14 @@ public class MapViewActivity extends Activity implements
 	}
 
 	/**
-	 * Loads map
+	 * Load points from the server for current map
 	 */
 	public void loadMap() {
 		/**
 		 * Loading points
 		 */
 		Hashtable<String, String> hash = new Hashtable<String, String>(3);
-		hash.put("imageId", Integer.valueOf(mData.imageId).toString());
+		hash.put("imageId", Integer.valueOf(image_ID).toString());
 		hash.put("token", DataPersistence.getToken(this));
 		NetworkTask task = new NetworkTask(this,
 				DataPersistence.getServerName(this), "/logs/pars/getpoint",
@@ -401,13 +406,15 @@ public class MapViewActivity extends Activity implements
 	}
 
 	/**
-	 * network task success
+	 * network task success, get all the points from the server for current map
 	 */
 	@Override
 	public void nTaskSucces(NetworkResult result) {
 		try {
 			XmlPullParser parser = XmlPullParserFactory.newInstance()
 					.newPullParser();
+			Log.v(LOG_TAG, new String(result.getData()).toString());
+			Log.v(LOG_TAG, "url " + result.getTask().getUrl());
 			parser.setInput(new ByteArrayInputStream(result.getData()), "UTF-8");
 			switch (((Integer) result.getTask().getTag(TAG_KEY)).intValue()) {
 			// case TAG_LOG_SUBMIT:
@@ -422,7 +429,7 @@ public class MapViewActivity extends Activity implements
 									&& parser.getName().equalsIgnoreCase("img")) {
 								HashMap<String, String> data = new HashMap<String, String>();
 								data.put("point_id", parser.getAttributeValue(
-										null, "scan_point_id"));
+										null, "segment_id"));
 								data.put("point_name", parser
 										.getAttributeValue(null,
 												"scan_point_name"));
@@ -430,13 +437,13 @@ public class MapViewActivity extends Activity implements
 										null, "point_x"));
 								data.put("point_y", parser.getAttributeValue(
 										null, "point_y"));
+								data.put("is_used", parser.getAttributeValue(
+										null, "is_used"));
 								points.add(data);
 							}
 					}
 				}
-
-				// mMapView.setPoints(points);
-
+				mapView.showLogs(serverLogMap, points);
 				break;
 			}
 		} catch (Exception e) {
@@ -819,6 +826,7 @@ public class MapViewActivity extends Activity implements
 								// if start scan
 								initTicker();
 								startScan();
+								startSensors();
 								mapView.setPointChangable(false);
 								button_scan_start.setVisibility(View.GONE);
 								button_scan_stop.setVisibility(View.VISIBLE);
@@ -832,7 +840,7 @@ public class MapViewActivity extends Activity implements
 						Toast.makeText(getApplicationContext(),
 								"Scan canceled!", Toast.LENGTH_SHORT).show();
 					}
-				}).setCancelable(true).setMessage("make sure to start scan?")
+				}).setCancelable(false).setMessage("make sure to start scan?")
 				.show();
 		return true;
 	}
@@ -870,7 +878,7 @@ public class MapViewActivity extends Activity implements
 								"Please click on another point! Then save the scan data.",
 								Toast.LENGTH_SHORT).show();
 					}
-				}).setCancelable(true).setMessage("Is end point correct?")
+				}).setCancelable(false).setMessage("Is end point correct?")
 				.show();
 		// mapView.clearData();
 		// mapView.startPaint(paintMap);
@@ -907,7 +915,7 @@ public class MapViewActivity extends Activity implements
 								"Clear canceled!", Toast.LENGTH_SHORT).show();
 					}
 				})
-				.setCancelable(true)
+				.setCancelable(false)
 				.setMessage(
 						"Do you really want to clear data? All unsaved data would be lost!")
 				.show();
@@ -979,13 +987,13 @@ public class MapViewActivity extends Activity implements
 	}
 
 	/**
-	 * stop scan
+	 * stop scan write all the scanned information to log
+	 * 
 	 */
 	protected void stopScan() {
-		stopSensors();
 		// mService.pauseScan();
 		mManager.finishScans();
-		mManager.stopScans();
+		stopServices();
 		// clear banner
 		Crouton.clearCroutonsForActivity(this);
 

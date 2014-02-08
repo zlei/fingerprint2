@@ -2,17 +2,19 @@ package com.lighthousesignal.fingerprint2.fragments;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
 
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.text.InputType;
 import android.util.SparseBooleanArray;
@@ -31,7 +33,6 @@ import android.widget.Spinner;
 import android.widget.Toast;
 
 import com.lighthousesignal.fingerprint2.R;
-import com.lighthousesignal.fingerprint2.activities.MainActivity;
 import com.lighthousesignal.fingerprint2.logs.LogWriter;
 import com.lighthousesignal.fingerprint2.network.HttpLogSender;
 import com.lighthousesignal.fingerprint2.utilities.DataPersistence;
@@ -54,6 +55,7 @@ public class ReviewFragment extends Fragment {
 	private CheckBox chk_multiple_selection;
 	private Boolean isMultiple = false;
 	private ArrayAdapter<String> mAdapter;
+	private HashMap<String, List<String>> statusList;
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -64,6 +66,7 @@ public class ReviewFragment extends Fragment {
 		mSFileList = new ArrayList<String>();
 		mEFileList = new ArrayList<String>();
 		logFilterList = new ArrayList<String>();
+		statusList = new HashMap<String, List<String>>();
 		View v = inflater.inflate(R.layout.fragment_review, container, false);
 		listView_filelist = (ListView) v.findViewById(R.id.listView_filelist);
 		spn_sort_by_type = (Spinner) v.findViewById(R.id.spinner_sort_type);
@@ -75,6 +78,8 @@ public class ReviewFragment extends Fragment {
 				.findViewById(R.id.checkBox_multiple_selection);
 
 		initSpn();
+		// load all files sent status into hash table
+		getStatusFile();
 		setFilelist();
 		updateLogFilterSpn();
 		updateSortOrderSpn();
@@ -89,8 +94,9 @@ public class ReviewFragment extends Fragment {
 	 */
 	private boolean setFilelist() {
 		updateLogfileList();
-		updateLogFilter(0);
-		updateSortOrder(0);
+		// get current spinner status
+		updateLogFilter(spn_log_filter.getSelectedItemPosition());
+		updateSortOrder(spn_sort_by_order.getSelectedItemPosition());
 		if (!isMultiple) {
 			listView_filelist
 					.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -164,12 +170,17 @@ public class ReviewFragment extends Fragment {
 					@Override
 					public void onClick(DialogInterface dialog, int which) {
 						String strName = arrayAdapter.getItem(which);
+						// get the origin status, do not change the other
+						// status(send to server and send by email)
+						String origin;
+
 						switch (which) {
 						// review in text
 						case 0:
 							try {
 								UiFactories.standardAlertDialog(mContext,
-										loadFilename, getLogText(loadFilename), null);
+										loadFilename, getLogText(loadFilename),
+										null);
 							} catch (Exception e) {
 								e.printStackTrace();
 							}
@@ -182,7 +193,11 @@ public class ReviewFragment extends Fragment {
 						case 2:
 							if (!mSFileList.contains(filename)) {
 								mSFileList.add(filename);
-								sendToServer();
+								// do not change the status of email
+								origin = statusList.get(filename).get(1);
+								updateTable(filename, "Y", origin);
+								sendToServer(filename);
+								updateStatusFile();
 								updateLogFilter(spn_log_filter
 										.getSelectedItemPosition());
 							}
@@ -191,7 +206,10 @@ public class ReviewFragment extends Fragment {
 						case 3:
 							if (!mEFileList.contains(filename)) {
 								mEFileList.add(filename);
+								origin = statusList.get(filename).get(0);
+								updateTable(filename, origin, "Y");
 								sendByEmail();
+								updateStatusFile();
 								updateLogFilter(spn_log_filter
 										.getSelectedItemPosition());
 							}
@@ -240,24 +258,38 @@ public class ReviewFragment extends Fragment {
 
 					@Override
 					public void onClick(DialogInterface dialog, int which) {
+						// get the origin status, do not change the other
+						// status(send to server and send by email)
+						String origin;
+
 						switch (which) {
 						// send to server
 						case 0:
 							for (int i = 0; i < filename.size(); i++) {
-								if (!mSFileList.contains(filename.get(i)))
+								if (!mSFileList.contains(filename.get(i))) {
 									mSFileList.add(filename.get(i));
+									origin = statusList.get(filename.get(i))
+											.get(1);
+									updateTable(filename.get(i), "Y", origin);
+									sendToServer(filename.get(i));
+								}
 							}
-							sendToServer();
+							updateStatusFile();
 							updateLogFilter(spn_log_filter
 									.getSelectedItemPosition());
 							break;
 						// send by email
 						case 1:
 							for (int i = 0; i < filename.size(); i++) {
-								if (!mEFileList.contains(filename.get(i)))
+								if (!mEFileList.contains(filename.get(i))) {
+									origin = statusList.get(filename.get(i))
+											.get(0);
+									updateTable(filename.get(i), origin, "Y");
 									mEFileList.add(filename.get(i));
+								}
 							}
 							if (sendByEmail()) {
+								updateStatusFile();
 								updateLogFilter(spn_log_filter
 										.getSelectedItemPosition());
 							} else
@@ -298,7 +330,7 @@ public class ReviewFragment extends Fragment {
 	}
 
 	/**
-	 * read file names from directory
+	 * read file names from directory, update sendToServer and sendByEmail lists
 	 * 
 	 * @return
 	 */
@@ -312,8 +344,27 @@ public class ReviewFragment extends Fragment {
 			filename = mCurrentFile.getName();
 			if (filename.contains(".log")) {
 				String[] name = filename.split("\\.");
-				// only input name of files
-				mFileList.add(name[0]);
+				String filekey = name[0];
+				// do not include wifi.log and error.log
+				if (!filekey.equals("error") && !filekey.equals("wifi"))
+					// only input name of files
+					mFileList.add(filekey);
+				// deal with server list
+				if (statusList.containsKey(filekey)) {
+					if (statusList.get(filekey).get(0).equals("Y")
+							&& !mSFileList.contains(filekey)) {
+						mSFileList.add(filekey);
+					}
+					// deal with email list
+					if (statusList.get(filekey).get(1).equals("Y")
+							&& !mEFileList.contains(filekey)) {
+						mEFileList.add(filekey);
+					}
+				}
+				// for new logs, donot have data in the status file, update here
+				else {
+					updateTable(filekey, "N", "N");
+				}
 			}
 		}
 		return true;
@@ -478,19 +529,22 @@ public class ReviewFragment extends Fragment {
 	}
 
 	/**
-	 * send selected file to server
-	 * TODO save send logs status permanently  
+	 * send selected file to server TODO save send logs status permanently
+	 * 
 	 * @return
 	 */
-	private boolean sendToServer() {
+	private boolean sendToServer(String filename) {
 		String token = DataPersistence.getToken(mContext);
-		if (mSFileList.size() > 0) {
-			new HttpLogSender(mContext, DataPersistence.getServerName(mContext)
-					+ getString(R.string.submit_log_url), mSFileList).setToken(
-					token).execute();
-			return true;
+		// TODO get response from server before return true
+		ArrayList<String> toSend = new ArrayList<String>();
+		for (String file : mSFileList) {
+			if (statusList.get(file).get(0).equals("N"))
+				toSend.add(file);
 		}
-		return false;
+		new HttpLogSender(mContext, DataPersistence.getServerName(mContext)
+				+ getString(R.string.submit_log_url), toSend).setToken(token)
+				.execute();
+		return true;
 	}
 
 	/**
@@ -524,6 +578,7 @@ public class ReviewFragment extends Fragment {
 				"Wifi Searcher Scan Log");
 		emailIntent.putParcelableArrayListExtra(Intent.EXTRA_STREAM, uris);
 		startActivity(Intent.createChooser(emailIntent, "Send mail..."));
+
 		return true;
 	}
 
@@ -609,4 +664,65 @@ public class ReviewFragment extends Fragment {
 		return mFileList;
 	}
 
+	/**
+	 * get status file
+	 */
+	public boolean getStatusFile() {
+		try {
+			File f = new File(LogWriter.APPEND_PATH + "status");
+			FileInputStream is = new FileInputStream(f);
+			int size = is.available();
+			byte[] buffer = new byte[size];
+			is.read(buffer);
+			is.close();
+			String s = new String(buffer);
+			/**
+			 * deal with the logs, split strings to hashmap and arraylist
+			 */
+			s = s.replaceAll("[\\[\\{\\}\\s]", "");
+			String[] pairs = s.split("\\],");
+			pairs[pairs.length - 1] = pairs[pairs.length - 1].replaceAll("\\]",
+					"");
+			for (int i = 0; i < pairs.length; i++) {
+				String[] key = pairs[i].split("=");
+				String[] value = key[1].split(",");
+				updateTable(key[0], value[0], value[1]);
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return true;
+	}
+
+	/**
+	 * write to json file for file status
+	 * 
+	 * @param params
+	 * @param mJsonResponse
+	 */
+	public boolean updateStatusFile() {
+		try {
+			FileWriter file = new FileWriter(LogWriter.APPEND_PATH + "status");
+			file.write(statusList.toString());
+			file.flush();
+			file.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return true;
+	}
+
+	/**
+	 * save file status to json
+	 */
+	public Boolean updateTable(String filename, String server, String email) {
+		/**
+		 * status format: sentToServer, sentByEmail
+		 */
+		ArrayList<String> status = new ArrayList<String>();
+		status.add(server);
+		status.add(email);
+		statusList.put(filename, status);
+		return true;
+	}
 }
